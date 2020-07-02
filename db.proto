@@ -1,0 +1,23 @@
+syntax = "proto3";
+package db;
+
+message SetRequest {
+	string Key = 1;
+	string Value = 2;
+}
+
+message SetResponse {
+}
+
+message GetRequest {
+	string Key = 1;
+}
+
+message GetResponse {
+	string Value = 1;
+}
+
+service DbService {
+	rpc Get(GetRequest) returns (GetResponse) {}
+	rpc Set(SetRequest) returns (SetResponse) {}
+}
