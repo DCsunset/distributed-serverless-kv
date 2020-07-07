@@ -3,7 +3,7 @@
 ## Run this project
 
 (The following steps are tested on Linux.
-Some steps might differ on otber platforms.)
+Some steps might differ on other platforms.)
 
 First, clone this repository directly to `$GOPATH/src/github/DCsunset/openwhisk-grpc`
 or clone it elsewhere and create a symlink in it.
