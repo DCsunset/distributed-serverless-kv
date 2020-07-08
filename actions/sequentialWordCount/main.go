@@ -15,7 +15,7 @@ import (
 func wordCount(client db.DbServiceClient, keys []string) int {
 	count := 0
 	for _, key := range keys {
-		response, _ := client.Get(context.Background(), &db.GetRequest{ Key: key })
+		response, _ := client.Get(context.Background(), &db.GetRequest{Key: key})
 		words := response.GetValue()
 		count += len(strings.Fields(words))
 	}
@@ -43,7 +43,7 @@ func main() {
 	count := wordCount(client, keys)
 
 	// Must return json result
-	result := make(map[string] int)
+	result := make(map[string]int)
 	result["count"] = count
 	res, _ := json.Marshal(result)
 	fmt.Println(string(res))
