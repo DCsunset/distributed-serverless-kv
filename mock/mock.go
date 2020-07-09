@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
@@ -28,7 +29,7 @@ func main() {
 	characters := strings.Split("abcdefghijklmnopqrstuvwxyz \t", "")
 
 	const keyLength = 8
-	const valueLength = 256
+	const valueLength = 1024
 	const keyCount = 1024
 
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
@@ -40,12 +41,15 @@ func main() {
 	client := db.NewDbServiceClient(conn)
 
 	for i := 0; i < keyCount; i++ {
-		k := randomWords(characters, keyLength)
+		k := strconv.Itoa(i)
 		v := randomWords(characters, valueLength)
-		client.Set(context.Background(), &db.SetRequest{
+		_, err := client.Set(context.Background(), &db.SetRequest{
 			Key:   k,
 			Value: v,
 		})
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
 		fmt.Printf("Set key %s\n", k)
 	}
 }
