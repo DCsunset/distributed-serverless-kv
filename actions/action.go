@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
 	"google.golang.org/grpc"
@@ -64,6 +65,7 @@ func wordCountSequential(client db.DbServiceClient, low int, high int) int {
 		}
 		words := response.GetValue()
 		count += len(strings.Fields(words))
+		time.Sleep(200 * time.Millisecond)
 	}
 	return count
 }
