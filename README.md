@@ -11,8 +11,8 @@ The action accepts the following parameters:
 
 ```json
 {
-	"low": 0, // range [0, high)
-	"high": 30, // range (low, 1024]
+	"low": 0,
+	"high": 30,
 	"parallel": false
 }
 ```
