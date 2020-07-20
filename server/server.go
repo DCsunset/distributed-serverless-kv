@@ -11,11 +11,11 @@ type Server struct{}
 var store = Store{}
 
 func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, error) {
-	value := store.Get(in.Key, in.Loc)
-	return &db.GetResponse{Value: value}, nil
+	data := store.Get(in.Keys, in.Loc)
+	return &db.GetResponse{Data: data}, nil
 }
 
 func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, error) {
-	loc := store.Set(in.Key, in.Value, in.VirtualLoc, in.Dep, in.VirtualDep)
+	loc := store.Set(in.Data, in.VirtualLoc, in.Dep, in.VirtualDep)
 	return &db.SetResponse{Location: loc}, nil
 }
