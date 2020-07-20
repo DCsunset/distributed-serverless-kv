@@ -41,6 +41,9 @@ func (s *Store) Get(keys []string, loc int64) map[string]string {
 }
 
 func addToLocMap(id int64, virtualLoc int64, loc int64) {
+	if store.locMap == nil {
+		store.locMap = make(map[int64]map[int64]int64)
+	}
 	if store.locMap[id] == nil {
 		store.locMap[id] = make(map[int64]int64)
 	}
@@ -53,7 +56,7 @@ func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int6
 		newLoc = s.newNode(dep, data)
 		addToLocMap(id, virtualLoc, newLoc)
 	} else {
-		realDep := s.locMap[id][dep]
+		realDep := s.locMap[id][virtualDep]
 		newLoc = s.newNode(realDep, data)
 	}
 	return newLoc

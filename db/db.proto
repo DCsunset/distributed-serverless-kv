@@ -2,8 +2,9 @@ syntax = "proto3";
 package db;
 
 message GetRequest {
-    repeated string Keys = 1;
-    int64 Loc = 2;
+    int64 SessionId = 1;
+    repeated string Keys = 2;
+    int64 Loc = 3;
 }
 message GetResponse {
     // Key-value pairs
@@ -11,14 +12,15 @@ message GetResponse {
 }
 
 message SetRequest {
+    int64 SessionId = 1;
     // Key-value pairs
-    map<string, string> Data = 1;
+    map<string, string> Data = 2;
     // Its virtual location
-    int64 VirtualLoc = 2;
+    int64 VirtualLoc = 3;
     // Dependent location
-    int64 Dep = 3;
+    int64 Dep = 4;
     // Dependent virtual location
-    int64 VirtualDep = 4;
+    int64 VirtualDep = 5;
 }
 message SetResponse {
     // Location of the changes
