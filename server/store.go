@@ -7,6 +7,8 @@ type Node struct {
 
 type Store struct {
 	nodes []Node // all nodes
+	// Map virtual locations to read ones (with sessionId)
+	locMap map[int64]map[int64]int64
 }
 
 func (s *Store) newNode(dep int64, data map[string]string) int64 {
@@ -38,7 +40,21 @@ func (s *Store) Get(keys []string, loc int64) map[string]string {
 	return data
 }
 
-func (s *Store) Set(data map[string]string, virtualLoc int64, dep int64, virtualDep int64) int64 {
-	newLoc := s.newNode(dep, data)
+func addToLocMap(id int64, virtualLoc int64, loc int64) {
+	if store.locMap[id] == nil {
+		store.locMap[id] = make(map[int64]int64)
+	}
+	store.locMap[id][virtualLoc] = loc
+}
+
+func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int64, virtualDep int64) int64 {
+	var newLoc int64
+	if dep != -2 {
+		newLoc = s.newNode(dep, data)
+		addToLocMap(id, virtualLoc, newLoc)
+	} else {
+		realDep := s.locMap[id][dep]
+		newLoc = s.newNode(realDep, data)
+	}
 	return newLoc
 }
