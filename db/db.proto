@@ -22,7 +22,7 @@ message SetRequest {
 }
 message SetResponse {
     // Location of the changes
-    int64 Location = 1;
+    int64 Loc = 1;
 }
 
 service DbService {

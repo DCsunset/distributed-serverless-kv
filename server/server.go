@@ -17,5 +17,5 @@ func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, e
 
 func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, error) {
 	loc := store.Set(in.Data, in.VirtualLoc, in.Dep, in.VirtualDep)
-	return &db.SetResponse{Location: loc}, nil
+	return &db.SetResponse{Loc: loc}, nil
 }
