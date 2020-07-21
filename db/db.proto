@@ -3,8 +3,10 @@ package db;
 
 message GetRequest {
     int64 SessionId = 1;
+    // Empty to get all keys at location
     repeated string Keys = 2;
     int64 Loc = 3;
+    int64 VirtualLoc = 4;
 }
 message GetResponse {
     // Key-value pairs

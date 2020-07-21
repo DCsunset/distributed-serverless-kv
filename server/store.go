@@ -22,6 +22,10 @@ func (s *Store) newNode(dep int64, data map[string]string) int64 {
 
 func (s *Store) Get(keys []string, loc int64) map[string]string {
 	node := s.nodes[loc]
+	if keys == nil {
+		return node.data
+	}
+
 	data := make(map[string]string)
 
 	// Find till root
