@@ -2,31 +2,13 @@
 
 ## Introduction
 
-This demo includes a simple key-value store and a word counting action.
+This demo includes a simple key-value store and a word counting action
+that simulates MapReduce workflow.
 
-The word counting action can be run in either sequential mode
-or parallel mode.
-
-The action accepts the following parameters:
-
-```json
-{
-	"low": 0,
-	"high": 30,
-	"parallel": false
-}
-```
-
-The action will count all the words stored in keys,
-where keys are in the range `[low, high)`.
-
-To invoke parallel actions,
-the `parellel` parameter should be changed to `true`
-in the file `invokeAction.sh`.
+The action will count all the words stored in keys within the range `[0, 20)`,
 
 **Note**:
-The number of action invocations are limited to 60 per minute by default,
-which means `high-low` should be at least smaller than 60 by default.
+The number of action invocations are limited to 60 per minute by default.
 The default limitations can be changed in helm configuration file when deploying.
 
 
@@ -53,7 +35,7 @@ go run mock.go
 Then, build the binary in directory `action` (must be statically linked):
 
 ```
-CGO_ENABLED=0 go build -o exec action.go
+CGO_ENABLED=0 go build -o exec <action>.go
 zip exec.zip exec
 ```
 
