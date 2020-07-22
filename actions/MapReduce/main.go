@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -99,12 +100,19 @@ type Argument struct {
 	VirtualLoc int64  `json:"virtualLoc,omitempty"`
 }
 
-func callAction(params *Argument) {
+func callAction(params *Argument, blocking bool) {
 	jsonValue, _ := json.Marshal(params)
+
+	var url string
+	if blocking {
+		url = fmt.Sprintf("https://%s/api/v1/namespaces/guest/actions/%s?blocking=true&result=true", APIHOST, ACTION)
+	} else {
+		url = fmt.Sprintf("https://%s/api/v1/namespaces/guest/actions/%s", APIHOST, ACTION)
+	}
 
 	// No need to wait for the response
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("https://%s/api/v1/namespaces/guest/actions/%s", APIHOST, ACTION), bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 	req.SetBasicAuth(username, password)
 	req.Header.Add("Content-Type", "application/json")
 
@@ -113,26 +121,36 @@ func callAction(params *Argument) {
 	if err != nil {
 		log.Fatalf("Fail to invoke action: %v", err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+
+	if blocking {
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		bodyString := string(bodyBytes)
+		fmt.Println(bodyString)
+	}
 }
 
 func runner(client db.DbServiceClient, sessionId int64) {
 	// Count key from 0 to 20
 	virtualLocs := makeRange(0, 20)
 
+	// No need to wait for result
 	for _, loc := range virtualLocs {
 		callAction(&Argument{
 			Kind:       "mapper",
 			SessionId:  sessionId,
 			VirtualLoc: loc,
-		})
+		}, false)
 	}
 
 	// Reduce using virtual locations
 	callAction(&Argument{
 		Kind:      "reducer",
 		SessionId: sessionId,
-	})
+	}, true)
 }
 
 const address = "172.18.0.1:9000"
