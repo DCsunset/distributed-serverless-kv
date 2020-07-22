@@ -36,7 +36,7 @@ func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[st
 	data := make(map[string]string)
 
 	// Find till root
-	for node.dep != -1 {
+	for {
 		for _, key := range keys {
 			_, ok := data[key]
 			if !ok {
@@ -45,6 +45,9 @@ func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[st
 					data[key] = value
 				}
 			}
+		}
+		if node.dep == -1 {
+			break
 		}
 		node = s.nodes[node.dep]
 	}
