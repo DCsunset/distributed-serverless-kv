@@ -89,7 +89,7 @@ func reducer(client db.DbServiceClient, sessionId int64) {
 }
 
 const APIHOST = "172.18.0.4:31001"
-const ACTION = "test-grpc"
+const ACTION = "mapreduce"
 const username = "23bc46b1-71f6-4ed5-8c54-816aa4f8c502"
 const password = "123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP"
 
@@ -100,17 +100,11 @@ type Argument struct {
 	VirtualLoc int64  `json:"virtualLoc,omitempty"`
 }
 
-func callAction(params *Argument, blocking bool) {
+func callAction(params *Argument, result bool) {
 	jsonValue, _ := json.Marshal(params)
 
-	var url string
-	if blocking {
-		url = fmt.Sprintf("https://%s/api/v1/namespaces/guest/actions/%s?blocking=true&result=true", APIHOST, ACTION)
-	} else {
-		url = fmt.Sprintf("https://%s/api/v1/namespaces/guest/actions/%s", APIHOST, ACTION)
-	}
+	url := fmt.Sprintf("https://%s/api/v1/namespaces/guest/actions/%s?blocking=true&result=true", APIHOST, ACTION)
 
-	// No need to wait for the response
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 	req.SetBasicAuth(username, password)
@@ -123,7 +117,7 @@ func callAction(params *Argument, blocking bool) {
 	}
 	defer resp.Body.Close()
 
-	if blocking {
+	if result {
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatal(err)
