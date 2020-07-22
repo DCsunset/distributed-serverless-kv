@@ -20,8 +20,15 @@ func (s *Store) newNode(dep int64, data map[string]string) int64 {
 	return int64(len(s.nodes)) - 1
 }
 
-func (s *Store) Get(keys []string, loc int64) map[string]string {
-	node := s.nodes[loc]
+func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[string]string {
+	var node Node
+	if loc >= 0 {
+		node = s.nodes[loc]
+	} else {
+		realLoc := s.locMap[id][virtualLoc]
+		node = s.nodes[realLoc]
+	}
+
 	if keys == nil {
 		return node.data
 	}

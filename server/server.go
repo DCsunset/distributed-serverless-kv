@@ -11,7 +11,7 @@ type Server struct{}
 var store = Store{}
 
 func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, error) {
-	data := store.Get(in.Keys, in.Loc)
+	data := store.Get(in.SessionId, in.Keys, in.Loc, in.VirtualLoc)
 	return &db.GetResponse{Data: data}, nil
 }
 
