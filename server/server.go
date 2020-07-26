@@ -4,11 +4,12 @@ import (
 	"context"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
+	"github.com/DCsunset/openwhisk-grpc/storage"
 )
 
 type Server struct{}
 
-var store = Store{}
+var store = storage.Store{}
 
 func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, error) {
 	data := store.Get(in.SessionId, in.Keys, in.Loc, in.VirtualLoc)

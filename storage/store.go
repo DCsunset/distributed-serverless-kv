@@ -1,4 +1,4 @@
-package main
+package storage
 
 type Node struct {
 	dep  int64
@@ -54,21 +54,21 @@ func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[st
 	return data
 }
 
-func addToLocMap(id int64, virtualLoc int64, loc int64) {
-	if store.locMap == nil {
-		store.locMap = make(map[int64]map[int64]int64)
+func (s *Store) addToLocMap(id int64, virtualLoc int64, loc int64) {
+	if s.locMap == nil {
+		s.locMap = make(map[int64]map[int64]int64)
 	}
-	if store.locMap[id] == nil {
-		store.locMap[id] = make(map[int64]int64)
+	if s.locMap[id] == nil {
+		s.locMap[id] = make(map[int64]int64)
 	}
-	store.locMap[id][virtualLoc] = loc
+	s.locMap[id][virtualLoc] = loc
 }
 
 func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int64, virtualDep int64) int64 {
 	var newLoc int64
 	if dep != -2 {
 		newLoc = s.newNode(dep, data)
-		addToLocMap(id, virtualLoc, newLoc)
+		s.addToLocMap(id, virtualLoc, newLoc)
 	} else {
 		realDep := s.locMap[id][virtualDep]
 		newLoc = s.newNode(realDep, data)
