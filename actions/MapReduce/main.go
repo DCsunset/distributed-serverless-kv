@@ -142,7 +142,7 @@ func runner(client db.DbServiceClient, sessionId int64) {
 			VirtualLoc: loc,
 		}, true)
 		var count map[string]string
-		json.Unmarshal(res, count)
+		json.Unmarshal(res, &count)
 
 		// Store intermediate results locally
 		cache.Set(sessionId, count, loc, -1, -1)
@@ -161,7 +161,7 @@ func runner(client db.DbServiceClient, sessionId int64) {
 		SessionId:     sessionId,
 		MapperResults: mapperResults,
 	}, true)
-	fmt.Println(res)
+	fmt.Println(string(res))
 }
 
 const address = "172.18.0.1:9000"

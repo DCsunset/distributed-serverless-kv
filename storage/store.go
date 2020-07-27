@@ -6,9 +6,9 @@ type Node struct {
 }
 
 type Store struct {
-	nodes []Node // all nodes
+	Nodes []Node // all nodes
 	// Map virtual locations to read ones (with sessionId)
-	locMap map[int64]map[int64]int64
+	LocMap map[int64]map[int64]int64
 }
 
 func (s *Store) newNode(dep int64, data map[string]string) int64 {
@@ -16,17 +16,17 @@ func (s *Store) newNode(dep int64, data map[string]string) int64 {
 		dep:  -1,
 		data: data,
 	}
-	s.nodes = append(s.nodes, node)
-	return int64(len(s.nodes)) - 1
+	s.Nodes = append(s.Nodes, node)
+	return int64(len(s.Nodes)) - 1
 }
 
 func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[string]string {
 	var node Node
 	if loc >= 0 {
-		node = s.nodes[loc]
+		node = s.Nodes[loc]
 	} else {
-		realLoc := s.locMap[id][virtualLoc]
-		node = s.nodes[realLoc]
+		realLoc := s.LocMap[id][virtualLoc]
+		node = s.Nodes[realLoc]
 	}
 
 	if keys == nil {
@@ -49,19 +49,19 @@ func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[st
 		if node.dep == -1 {
 			break
 		}
-		node = s.nodes[node.dep]
+		node = s.Nodes[node.dep]
 	}
 	return data
 }
 
 func (s *Store) addToLocMap(id int64, virtualLoc int64, loc int64) {
-	if s.locMap == nil {
-		s.locMap = make(map[int64]map[int64]int64)
+	if s.LocMap == nil {
+		s.LocMap = make(map[int64]map[int64]int64)
 	}
-	if s.locMap[id] == nil {
-		s.locMap[id] = make(map[int64]int64)
+	if s.LocMap[id] == nil {
+		s.LocMap[id] = make(map[int64]int64)
 	}
-	s.locMap[id][virtualLoc] = loc
+	s.LocMap[id][virtualLoc] = loc
 }
 
 func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int64, virtualDep int64) int64 {
@@ -70,7 +70,7 @@ func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int6
 		newLoc = s.newNode(dep, data)
 		s.addToLocMap(id, virtualLoc, newLoc)
 	} else {
-		realDep := s.locMap[id][virtualDep]
+		realDep := s.LocMap[id][virtualDep]
 		newLoc = s.newNode(realDep, data)
 	}
 	return newLoc
