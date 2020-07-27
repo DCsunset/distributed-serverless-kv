@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
+	"github.com/DCsunset/openwhisk-grpc/storage"
 	"google.golang.org/grpc"
 )
 
@@ -40,14 +41,17 @@ func mapper(client db.DbServiceClient, sessionId int64, virtualLoc int64) {
 		}
 	}
 
-	client.Set(context.Background(), &db.SetRequest{
-		SessionId:  sessionId,
-		Data:       count,
-		VirtualLoc: virtualLoc,
-		Dep:        -1,
-	})
+	// client.Set(context.Background(), &db.SetRequest{
+	// 	SessionId:  sessionId,
+	// 	Data:       count,
+	// 	VirtualLoc: virtualLoc,
+	// 	Dep:        -1,
+	// })
+	// fmt.Println("{ \"ok\": true }")
 
-	fmt.Println("{ \"ok\": true }")
+	// Return intermediate results
+	resp, _ := json.Marshal(count)
+	fmt.Println(string(resp))
 }
 
 func makeRange(min, max int64) []int64 {
@@ -58,20 +62,14 @@ func makeRange(min, max int64) []int64 {
 	return a
 }
 
-func reducer(client db.DbServiceClient, sessionId int64) {
+func reducer(client db.DbServiceClient, sessionId int64, mapperResults []map[string]string) {
 	count := make(map[string]string)
 
 	// From key 0 to 20
 	virtualLocs := makeRange(0, 20)
 
 	for _, loc := range virtualLocs {
-		res, _ := client.Get(context.Background(), &db.GetRequest{
-			SessionId:  sessionId,
-			Keys:       nil,
-			Loc:        -2,
-			VirtualLoc: loc,
-		})
-		partialData := res.GetData()
+		partialData := mapperResults[loc]
 		for key, valueStr := range partialData {
 			c, ok := count[key]
 			if ok {
@@ -95,12 +93,13 @@ const password = "123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGI
 
 type Argument struct {
 	// keys from [low, high)
-	Kind       string `json:"kind"`
-	SessionId  int64  `json:"sessionId,omitempty"`
-	VirtualLoc int64  `json:"virtualLoc,omitempty"`
+	Kind          string              `json:"kind"`
+	SessionId     int64               `json:"sessionId,omitempty"`
+	VirtualLoc    int64               `json:"virtualLoc,omitempty"`
+	MapperResults []map[string]string `json:"mapperResults,omitempty"`
 }
 
-func callAction(params *Argument, result bool) {
+func callAction(params *Argument, result bool) []byte {
 	jsonValue, _ := json.Marshal(params)
 
 	url := fmt.Sprintf("https://%s/api/v1/namespaces/guest/actions/%s?blocking=true&result=true", APIHOST, ACTION)
@@ -122,29 +121,47 @@ func callAction(params *Argument, result bool) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		bodyString := string(bodyBytes)
-		fmt.Println(bodyString)
+		return bodyBytes
 	}
+
+	return nil
 }
 
 func runner(client db.DbServiceClient, sessionId int64) {
+	// Local cache
+	var cache = storage.Store{}
+
 	// Count key from 0 to 20
 	virtualLocs := makeRange(0, 20)
 
-	// No need to wait for result
+	// This part can run in parallel
 	for _, loc := range virtualLocs {
-		callAction(&Argument{
+		res := callAction(&Argument{
 			Kind:       "mapper",
 			SessionId:  sessionId,
 			VirtualLoc: loc,
-		}, false)
+		}, true)
+		var count map[string]string
+		json.Unmarshal(res, count)
+
+		// Store intermediate results locally
+		cache.Set(sessionId, count, loc, -1, -1)
+	}
+
+	// Fetch the result from local cache
+	var mapperResults []map[string]string
+	for _, loc := range virtualLocs {
+		result := cache.Get(sessionId, nil, -2, loc)
+		mapperResults = append(mapperResults, result)
 	}
 
 	// Reduce using virtual locations
-	callAction(&Argument{
-		Kind:      "reducer",
-		SessionId: sessionId,
+	res := callAction(&Argument{
+		Kind:          "reducer",
+		SessionId:     sessionId,
+		MapperResults: mapperResults,
 	}, true)
+	fmt.Println(res)
 }
 
 const address = "172.18.0.1:9000"
@@ -170,6 +187,6 @@ func main() {
 	} else if args.Kind == "mapper" {
 		mapper(client, args.SessionId, args.VirtualLoc)
 	} else {
-		reducer(client, args.SessionId)
+		reducer(client, args.SessionId, args.MapperResults)
 	}
 }
