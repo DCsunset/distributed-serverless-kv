@@ -17,7 +17,7 @@ The default limitations can be changed in helm configuration file when deploying
 (The following steps are tested on Linux.
 Some steps might differ on other platforms.)
 
-First, clone this repository directly to `$GOPATH/src/github/DCsunset/openwhisk-grpc`
+First, clone this repository directly to `$GOPATH/src/github.com/DCsunset/openwhisk-grpc`
 or clone it elsewhere and create a symlink in it.
 
 Then, start the db server in directory `server`:
