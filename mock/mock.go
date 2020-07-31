@@ -48,7 +48,7 @@ func main() {
 		SessionId:  0,
 		Data:       data,
 		VirtualLoc: 0,
-		Dep:        -1,
+		Dep:        0,
 	})
 	if err != nil {
 		log.Fatalf("%v", err)

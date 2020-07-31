@@ -19,6 +19,16 @@ type Store struct {
 }
 
 func (s *Store) newNode(dep int64, data map[string]string) int64 {
+	if len(s.Nodes) == 0 {
+		// Create a root first
+		root := Node{
+			dep:      dep,
+			data:     make(map[string]string),
+			children: nil,
+		}
+		s.Nodes = append(s.Nodes, root)
+	}
+
 	node := Node{
 		dep:      dep,
 		data:     data,
@@ -60,7 +70,7 @@ func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[st
 				}
 			}
 		}
-		if node.dep == -1 {
+		if node.dep == 0 {
 			break
 		}
 		node = s.Nodes[node.dep]
@@ -108,7 +118,7 @@ func (s *Store) updateHash(loc int64, currentDigest []byte) {
 			hash.Write(s.Nodes[child].digest)
 		}
 		node.digest = hash.Sum(currentDigest)
-		if node.dep == -1 {
+		if node.dep == 0 {
 			break
 		}
 		node = s.Nodes[node.dep]

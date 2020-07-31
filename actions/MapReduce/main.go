@@ -45,7 +45,7 @@ func mapper(client db.DbServiceClient, sessionId int64, virtualLoc int64) {
 	// 	SessionId:  sessionId,
 	// 	Data:       count,
 	// 	VirtualLoc: virtualLoc,
-	// 	Dep:        -1,
+	// 	Dep:        0,
 	// })
 	// fmt.Println("{ \"ok\": true }")
 
@@ -131,7 +131,7 @@ func runner(client db.DbServiceClient, sessionId int64) {
 	// Local cache
 	var cache = storage.Store{}
 
-	// Count key from 0 to 20
+	// Count key from 1 to 20
 	virtualLocs := makeRange(0, 20)
 
 	// This part can run in parallel
@@ -145,13 +145,13 @@ func runner(client db.DbServiceClient, sessionId int64) {
 		json.Unmarshal(res, &count)
 
 		// Store intermediate results locally
-		cache.Set(sessionId, count, loc, -1, -1)
+		cache.Set(sessionId, count, loc, 0, -1)
 	}
 
 	// Fetch the result from local cache
 	var mapperResults []map[string]string
 	for _, loc := range virtualLocs {
-		result := cache.Get(sessionId, nil, -2, loc)
+		result := cache.Get(sessionId, nil, -1, loc)
 		mapperResults = append(mapperResults, result)
 	}
 

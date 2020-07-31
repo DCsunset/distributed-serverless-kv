@@ -38,7 +38,7 @@ func main() {
 	res1, _ := client.Set(context.Background(), &db.SetRequest{
 		SessionId:  id,
 		Data:       update,
-		Dep:        -1,
+		Dep:        0,
 		VirtualLoc: 1,
 	})
 	update = makeUpdate(localData, "chained-2", localData["chained-1"]+" b b")
@@ -53,7 +53,7 @@ func main() {
 	res3, _ := client.Set(context.Background(), &db.SetRequest{
 		SessionId:  id,
 		Data:       update,
-		Dep:        -2, // -2 means nil
+		Dep:        -1, // -1 means nil
 		VirtualLoc: 3,
 		VirtualDep: 2,
 	})
@@ -66,4 +66,3 @@ func main() {
 	res, _ := json.Marshal(result)
 	fmt.Println(string(res))
 }
-
