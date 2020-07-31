@@ -29,7 +29,45 @@ message SetResponse {
     int64 Loc = 1;
 }
 
+message Node {
+    // Parent location
+    int64 Dep = 1;
+    repeated int64 Children = 2;
+    map<string, string> Data = 3;
+    bytes Digest = 4;
+}
+
+message UploadRequest {
+    // Upload to location
+    int64 Location = 1;
+    // Nodes to append to the location (in topological order)
+    repeated Node Nodes = 2;
+}
+message UploadResponse {
+}
+
+message DownloadRequest {
+    // Download from location
+    int64 Location = 1;
+}
+message DownloadResponse {
+    // Nodes from the location (in topological order)
+    repeated Node Nodes = 1;
+}
+
+message GetMerkleTreeRequest {
+    // Tree from location
+    int64 Location = 1;
+}
+message GetMerkleTreeResponse {
+    // Nodes (containing only children, digest and dep)
+    repeated Node Nodes = 1;
+}
+
 service DbService {
-	rpc Get(GetRequest) returns (GetResponse) {}
-	rpc Set(SetRequest) returns (SetResponse) {}
+    rpc Get(GetRequest) returns (GetResponse) {}
+    rpc Set(SetRequest) returns (SetResponse) {}
+    rpc Upload(UploadRequest) returns (UploadResponse) {}
+    rpc Download(DownloadRequest) returns (DownloadResponse) {}
+    rpc GetMerkleTree(GetMerkleTreeRequest) returns (GetMerkleTreeResponse) {}
 }
