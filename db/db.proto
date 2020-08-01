@@ -47,8 +47,8 @@ message UploadResponse {
 }
 
 message DownloadRequest {
-    // Download from location
-    int64 Location = 1;
+    // Download from locations
+    repeated int64 Locations = 1;
 }
 message DownloadResponse {
     // Nodes from the location (in topological order)

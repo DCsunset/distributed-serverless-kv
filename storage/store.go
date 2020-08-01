@@ -6,10 +6,11 @@ import (
 )
 
 type Node struct {
-	dep      int64
-	children []int64
-	data     map[string]string // record current updates
-	digest   []byte            // Save Merkle tree inline
+	dep        int64
+	children   []int64
+	data       map[string]string // record current updates
+	digest     []byte            // Save Merkle tree inline
+	dataDigest []byte            // Save data digest for comparing itself
 }
 
 type Store struct {
@@ -22,9 +23,10 @@ func (s *Store) newNode(dep int64, data map[string]string) int64 {
 	if len(s.Nodes) == 0 {
 		// Create a root first
 		root := Node{
-			dep:      dep,
-			data:     make(map[string]string),
-			children: nil,
+			dep:        dep,
+			data:       make(map[string]string),
+			children:   nil,
+			dataDigest: nil,
 		}
 		s.Nodes = append(s.Nodes, root)
 	}
@@ -110,6 +112,7 @@ func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int6
 
 func (s *Store) updateHash(loc int64, currentDigest []byte) {
 	node := s.Nodes[loc]
+	node.dataDigest = currentDigest
 	// Update till root
 	for {
 		hash := sha256.New()
