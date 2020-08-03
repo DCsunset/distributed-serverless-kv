@@ -20,3 +20,18 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 	loc := store.Set(in.SessionId, in.Data, in.VirtualLoc, in.Dep, in.VirtualDep)
 	return &db.SetResponse{Loc: loc}, nil
 }
+
+func (s *Server) GetMerkleTree(ctx context.Context, in *db.GetMerkleTreeRequest) (*db.GetMerkleTreeResponse, error) {
+	nodes := store.GetMerkleTree(in.Location)
+	return &db.GetMerkleTreeResponse{Nodes: nodes}, nil
+}
+
+func (s *Server) Download(ctx context.Context, in *db.DownloadRequest) (*db.DownloadResponse, error) {
+	nodes := store.Download(in.Location)
+	return &db.DownloadResponse{Nodes: nodes}, nil
+}
+
+func (s *Server) Upload(ctx context.Context, in *db.UploadRequest) (*db.UploadResponse, error) {
+	store.Upload(in.Nodes)
+	return &db.UploadResponse{}, nil
+}
