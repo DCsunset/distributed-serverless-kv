@@ -17,6 +17,7 @@ func main() {
 	log.Println("Server listen at :9000")
 
 	server := Server{}
+	server.Init()
 	grpcServer := grpc.NewServer()
 	db.RegisterDbServiceServer(grpcServer, &server)
 
