@@ -29,7 +29,7 @@ func (s *Store) Init() {
 		// Create a root and map first
 		s.MemLocation = make(map[int64]int64)
 		root := Node{
-			dep:        0,
+			dep:        -1,
 			data:       make(map[string]string),
 			children:   nil,
 			dataDigest: nil,
