@@ -44,7 +44,7 @@ func main() {
 		v := randomWords(characters, valueLength)
 		data[k] = v
 	}
-	_, err = client.Set(context.Background(), &db.SetRequest{
+	resp, err := client.Set(context.Background(), &db.SetRequest{
 		SessionId:  0,
 		Data:       data,
 		VirtualLoc: 0,
@@ -53,4 +53,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
+	println("Location: ", resp.Loc)
 }
