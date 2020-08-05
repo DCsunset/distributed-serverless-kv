@@ -87,7 +87,7 @@ func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[st
 				}
 			}
 		}
-		if node.dep == 0 {
+		if node.dep == -1 {
 			break
 		}
 		node = s.getNode(node.dep)
@@ -200,6 +200,10 @@ func (s *Store) Download(location int64) []*db.Node {
 
 func (s *Store) Upload(nodes []*db.Node) {
 	for _, node := range nodes {
+		// Skip root
+		if node.Dep == -1 {
+			continue
+		}
 		loc := s.newNode(node.Dep, node.Data, node.DataDigest)
 		n := s.getNode(loc)
 		n.children = node.Children
