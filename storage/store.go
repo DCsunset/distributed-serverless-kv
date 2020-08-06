@@ -216,7 +216,7 @@ func (s *Store) Upload(nodes []*db.Node) {
 		localNode := s.getNode(location)
 		if localNode != nil {
 			localNode.children = append(localNode.children, node.Children...)
-			// TODO: update cache
+			s.updateHash(location, localNode.dataDigest)
 		} else {
 			loc := s.newNode(node.Dep, node.Data, node.DataDigest)
 			n := s.getNode(loc)
