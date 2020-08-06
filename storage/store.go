@@ -116,11 +116,15 @@ func (s *Store) addToLocMap(id int64, virtualLoc int64, loc int64) {
 func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int64, virtualDep int64) int64 {
 	// Compute hash
 	hash := sha256.New()
-	bytes, _ := json.Marshal(data)
-	digest := hash.Sum(bytes)
+	dataBytes, _ := json.Marshal(data)
+	hash.Write(dataBytes)
+	depBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(depBytes, uint64(dep))
+	hash.Write(depBytes)
+	digest := hash.Sum(nil)
 
 	var newLoc int64
-	if dep != -2 {
+	if dep >= 0 {
 		newLoc = s.newNode(dep, data, digest)
 		s.addToLocMap(id, virtualLoc, newLoc)
 	} else {
