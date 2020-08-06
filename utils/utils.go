@@ -13,7 +13,7 @@ func MakeRange(min, max int64) []int64 {
 	return a
 }
 
-func PrintMap(m map[string]string) {
+func Print(m interface{}) {
 	str, _ := json.Marshal(m)
 	fmt.Println(string(str))
 }
