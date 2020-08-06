@@ -22,8 +22,6 @@ func mapper(sessionId int64, cache *storage.Store, virtualLoc int64, location in
 	keys = append(keys, key)
 
 	res := cache.Get(sessionId, keys, location, -1)
-	println(location)
-	utils.PrintMap(res)
 
 	words := strings.Fields(res[key])
 	for _, word := range words {
@@ -67,9 +65,15 @@ func runner(client db.DbServiceClient, sessionId int64, location int64) {
 	var cache = storage.Store{}
 	cache.Init()
 
+	merkleTreeResp, _ := client.GetMerkleTree(context.Background(), &db.GetMerkleTreeRequest{
+		Location: 0,
+	})
+	// outdated locations
+	locations := cache.Compare(merkleTreeResp.Nodes)
+
 	// Download data from server
 	resp, _ := client.Download(context.Background(), &db.DownloadRequest{
-		Location: location,
+		Locations: locations,
 	})
 	cache.Upload(resp.Nodes)
 
@@ -79,7 +83,7 @@ func runner(client db.DbServiceClient, sessionId int64, location int64) {
 	// This part can run in parallel
 	for _, slice := range slices {
 		count := mapper(sessionId, &cache, slice, location)
-		utils.PrintMap(count)
+		utils.Print(count)
 
 		// Store intermediate results locally
 		cache.Set(sessionId, count, slice, 0, -1)
@@ -95,7 +99,7 @@ func runner(client db.DbServiceClient, sessionId int64, location int64) {
 	println("R: ", mapperResults)
 
 	res := reducer(sessionId, mapperResults)
-	utils.PrintMap(res)
+	utils.Print(res)
 }
 
 type Argument struct {
