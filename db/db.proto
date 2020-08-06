@@ -47,7 +47,7 @@ message UploadResponse {
 
 message DownloadRequest {
     // Download from locations
-    int64 Location = 1;
+    repeated int64 Locations = 1;
 }
 message DownloadResponse {
     // Nodes from the location
