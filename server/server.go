@@ -31,7 +31,7 @@ func (s *Server) GetMerkleTree(ctx context.Context, in *db.GetMerkleTreeRequest)
 }
 
 func (s *Server) Download(ctx context.Context, in *db.DownloadRequest) (*db.DownloadResponse, error) {
-	nodes := store.Download(in.Location)
+	nodes := store.Download(in.Locations)
 	return &db.DownloadResponse{Nodes: nodes}, nil
 }
 

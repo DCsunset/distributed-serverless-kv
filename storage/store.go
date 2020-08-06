@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/json"
+	"reflect"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
 )
@@ -39,9 +40,16 @@ func (s *Store) Init() {
 	}
 }
 
+func nodeLocation(dataDigest []byte) int64 {
+	if dataDigest == nil {
+		return 0
+	}
+	return int64(binary.BigEndian.Uint64(dataDigest[:8]))
+}
+
 func (s *Store) newNode(dep int64, data map[string]string, dataDigest []byte) int64 {
 	// Use hash location
-	loc := int64(binary.BigEndian.Uint64(dataDigest[:8]))
+	loc := nodeLocation(dataDigest)
 
 	node := Node{
 		dep:        dep,
@@ -55,7 +63,7 @@ func (s *Store) newNode(dep int64, data map[string]string, dataDigest []byte) in
 	s.MemLocation[loc] = memLoc
 
 	// Append to parent's child list
-	parent := s.Nodes[memLoc]
+	parent := s.getNode(dep)
 	parent.children = append(parent.children, loc)
 
 	return loc
@@ -126,7 +134,10 @@ func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int6
 }
 
 func (s *Store) getNode(loc int64) *Node {
-	memLoc := s.MemLocation[loc]
+	memLoc, ok := s.MemLocation[loc]
+	if !ok {
+		return nil
+	}
 	return &s.Nodes[memLoc]
 }
 
@@ -173,12 +184,12 @@ func (s *Store) GetMerkleTree(location int64) []*db.Node {
 	return nodes
 }
 
-func (s *Store) Download(location int64) []*db.Node {
+func (s *Store) Download(locations []int64) []*db.Node {
 	// Extract only hash info from tree
 	var nodes []*db.Node
 
 	var queue []int64
-	queue = append(queue, location)
+	queue = append(queue, locations...)
 	for len(queue) > 0 {
 		currentLocation := queue[0]
 		queue = queue[1:]
@@ -195,18 +206,74 @@ func (s *Store) Download(location int64) []*db.Node {
 		}
 	}
 
+	// nodes are in topological order
 	return nodes
 }
 
 func (s *Store) Upload(nodes []*db.Node) {
 	for _, node := range nodes {
-		// Skip root
-		if node.Dep == -1 {
+		location := nodeLocation(node.DataDigest)
+		localNode := s.getNode(location)
+		if localNode != nil {
+			localNode.children = append(localNode.children, node.Children...)
+			// TODO: update cache
+		} else {
+			loc := s.newNode(node.Dep, node.Data, node.DataDigest)
+			n := s.getNode(loc)
+			n.children = node.Children
+			n.digest = node.Digest
+		}
+	}
+}
+
+// Compare outdated notes
+// The nodes are in the Merkle tree
+func (s *Store) Compare(nodes []*db.Node) []int64 {
+	outdatedNodes := make(map[int64]bool)
+	sameNodes := make(map[int64]bool)
+
+	var results []int64
+
+	for _, node := range nodes {
+		location := nodeLocation(node.DataDigest)
+		_, ok := outdatedNodes[location]
+		if ok {
 			continue
 		}
-		loc := s.newNode(node.Dep, node.Data, node.DataDigest)
-		n := s.getNode(loc)
-		n.children = node.Children
-		n.digest = node.Digest
+		_, ok = outdatedNodes[location]
+		if ok {
+			continue
+		}
+
+		localNode := s.getNode(location)
+		// The whole subtree is missed
+		if localNode == nil {
+			results = append(results, location)
+			outdatedNodes[location] = true
+			// Add children to outdated
+			for _, child := range node.Children {
+				outdatedNodes[child] = true
+			}
+			continue
+		}
+
+		if reflect.DeepEqual(localNode.digest, node.Digest) {
+			sameNodes[location] = true
+			// Add children to sameNodes
+			for _, child := range node.Children {
+				sameNodes[child] = true
+			}
+			continue
+		}
+
+		// The whole subtree is different
+		results = append(results, location)
+		outdatedNodes[location] = true
+		// Add children to outdated
+		for _, child := range node.Children {
+			outdatedNodes[child] = true
+		}
 	}
+
+	return results
 }
