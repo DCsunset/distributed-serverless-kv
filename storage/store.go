@@ -238,10 +238,18 @@ func (s *Store) Compare(nodes []*db.Node) []int64 {
 		location := nodeLocation(node.DataDigest)
 		_, ok := outdatedNodes[location]
 		if ok {
+			// Add children to outdatedNodes
+			for _, child := range node.Children {
+				outdatedNodes[child] = true
+			}
 			continue
 		}
-		_, ok = outdatedNodes[location]
+		_, ok = sameNodes[location]
 		if ok {
+			// Add children to sameNodes
+			for _, child := range node.Children {
+				sameNodes[child] = true
+			}
 			continue
 		}
 
@@ -266,13 +274,7 @@ func (s *Store) Compare(nodes []*db.Node) []int64 {
 			continue
 		}
 
-		// The whole subtree is different
-		results = append(results, location)
-		outdatedNodes[location] = true
-		// Add children to outdated
-		for _, child := range node.Children {
-			outdatedNodes[child] = true
-		}
+		// Only the subtree is different, continue
 	}
 
 	return results
