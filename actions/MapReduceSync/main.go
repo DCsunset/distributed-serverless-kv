@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -21,14 +22,14 @@ import (
 
 type Argument struct {
 	// Location to store the words
-	Location      int64               `json:"location"`
+	Location      int64               `json:"location,omitempty"`
 	Kind          string              `json:"kind"`
-	Sentence      string              `json:"virtualLoc,omitempty"`
+	Sentence      string              `json:"sentence,omitempty"`
 	MapperResults []map[string]string `json:"mapperResults,omitempty"`
 }
 
 const APIHOST = "172.18.0.4:31001"
-const ACTION = "mapreduce"
+const ACTION = "mapreducesync"
 const username = "23bc46b1-71f6-4ed5-8c54-816aa4f8c502"
 const password = "123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP"
 
@@ -154,6 +155,8 @@ func runner(client db.DbServiceClient, sessionId int64, location int64) {
 const address = "172.18.0.1:9000"
 
 func main() {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("Cannot connect: %v", err)
@@ -171,8 +174,10 @@ func main() {
 		id := rand.Int63()
 		runner(client, id, args.Location)
 	} else if args.Kind == "mapper" {
-		mapper(args.Sentence)
+		res := mapper(args.Sentence)
+		utils.Print(res)
 	} else {
-		reducer(args.MapperResults)
+		res := reducer(args.MapperResults)
+		utils.Print(res)
 	}
 }
