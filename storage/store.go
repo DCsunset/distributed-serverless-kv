@@ -71,7 +71,7 @@ func (s *Store) newNode(dep int64, data map[string]string, dataDigest []byte) in
 
 func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[string]string {
 	var node *Node
-	if loc >= 0 {
+	if virtualLoc < 0 {
 		node = s.getNode(loc)
 	} else {
 		realLoc := s.LocMap[id][virtualLoc]
@@ -124,7 +124,7 @@ func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int6
 	digest := hash.Sum(nil)
 
 	var newLoc int64
-	if dep >= 0 {
+	if virtualDep < 0 {
 		newLoc = s.newNode(dep, data, digest)
 		s.addToLocMap(id, virtualLoc, newLoc)
 	} else {

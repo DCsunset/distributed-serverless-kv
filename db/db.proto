@@ -17,11 +17,11 @@ message SetRequest {
     int64 SessionId = 1;
     // Key-value pairs
     map<string, string> Data = 2;
-    // Its virtual location
+    // Its virtual location (must >= 0 if used, < 0 means not used)
     int64 VirtualLoc = 3;
     // Dependent location
     int64 Dep = 4;
-    // Dependent virtual location
+    // Dependent virtual location (must >= 0 if used, < 0 means not used)
     int64 VirtualDep = 5;
 }
 message SetResponse {
