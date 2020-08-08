@@ -15,11 +15,10 @@ import (
 	"strings"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
-	"github.com/DCsunset/openwhisk-grpc/storage"
 	"google.golang.org/grpc"
 )
 
-func mapper(client db.DbServiceClient, sessionId int64, virtualLoc int64) {
+func mapper(client db.DbServiceClient, sessionId int64, virtualLoc int64, location int64) {
 	count := make(map[string]string)
 	var keys []string
 	key := strconv.Itoa(int(virtualLoc))
@@ -27,7 +26,7 @@ func mapper(client db.DbServiceClient, sessionId int64, virtualLoc int64) {
 
 	res, _ := client.Get(context.Background(), &db.GetRequest{
 		Keys: keys,
-		Loc:  0,
+		Loc:  location,
 	})
 
 	words := strings.Fields(res.GetData()[key])
@@ -41,17 +40,14 @@ func mapper(client db.DbServiceClient, sessionId int64, virtualLoc int64) {
 		}
 	}
 
-	// client.Set(context.Background(), &db.SetRequest{
-	// 	SessionId:  sessionId,
-	// 	Data:       count,
-	// 	VirtualLoc: virtualLoc,
-	// 	Dep:        0,
-	// })
-	// fmt.Println("{ \"ok\": true }")
+	client.Set(context.Background(), &db.SetRequest{
+		SessionId:  sessionId,
+		Data:       count,
+		VirtualLoc: virtualLoc,
+		Dep:        0,
+	})
 
-	// Return intermediate results
-	resp, _ := json.Marshal(count)
-	fmt.Println(string(resp))
+	fmt.Println("{ \"ok\": true }")
 }
 
 func makeRange(min, max int64) []int64 {
@@ -62,14 +58,20 @@ func makeRange(min, max int64) []int64 {
 	return a
 }
 
-func reducer(client db.DbServiceClient, sessionId int64, mapperResults []map[string]string) {
+func reducer(client db.DbServiceClient, sessionId int64) {
 	count := make(map[string]string)
 
 	// From key 0 to 20
 	virtualLocs := makeRange(0, 20)
 
 	for _, loc := range virtualLocs {
-		partialData := mapperResults[loc]
+		res, _ := client.Get(context.Background(), &db.GetRequest{
+			SessionId:  sessionId,
+			Keys:       nil,
+			Loc:        -2,
+			VirtualLoc: loc,
+		})
+		partialData := res.GetData()
 		for key, valueStr := range partialData {
 			c, ok := count[key]
 			if ok {
@@ -92,11 +94,10 @@ const username = "23bc46b1-71f6-4ed5-8c54-816aa4f8c502"
 const password = "123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP"
 
 type Argument struct {
-	// keys from [low, high)
-	Kind          string              `json:"kind"`
-	SessionId     int64               `json:"sessionId,omitempty"`
-	VirtualLoc    int64               `json:"virtualLoc,omitempty"`
-	MapperResults []map[string]string `json:"mapperResults,omitempty"`
+	Location   int64  `json:"location"`
+	Kind       string `json:"kind"`
+	SessionId  int64  `json:"sessionId,omitempty"`
+	VirtualLoc int64  `json:"virtualLoc,omitempty"`
 }
 
 func callAction(params *Argument, result bool) []byte {
@@ -127,39 +128,24 @@ func callAction(params *Argument, result bool) []byte {
 	return nil
 }
 
-func runner(client db.DbServiceClient, sessionId int64) {
-	// Local cache
-	var cache = storage.Store{}
-
+func runner(client db.DbServiceClient, sessionId int64, location int64) {
 	// Count key from 1 to 20
 	virtualLocs := makeRange(0, 20)
 
 	// This part can run in parallel
 	for _, loc := range virtualLocs {
-		res := callAction(&Argument{
+		callAction(&Argument{
 			Kind:       "mapper",
 			SessionId:  sessionId,
 			VirtualLoc: loc,
-		}, true)
-		var count map[string]string
-		json.Unmarshal(res, &count)
-
-		// Store intermediate results locally
-		cache.Set(sessionId, count, loc, 0, -1)
-	}
-
-	// Fetch the result from local cache
-	var mapperResults []map[string]string
-	for _, loc := range virtualLocs {
-		result := cache.Get(sessionId, nil, -1, loc)
-		mapperResults = append(mapperResults, result)
+			Location:   location,
+		}, false)
 	}
 
 	// Reduce using virtual locations
 	res := callAction(&Argument{
-		Kind:          "reducer",
-		SessionId:     sessionId,
-		MapperResults: mapperResults,
+		Kind:      "reducer",
+		SessionId: sessionId,
 	}, true)
 	fmt.Println(string(res))
 }
@@ -183,10 +169,10 @@ func main() {
 	if args.Kind == "runner" {
 		// Generate new session ID
 		id := rand.Int63()
-		runner(client, id)
+		runner(client, id, args.Location)
 	} else if args.Kind == "mapper" {
-		mapper(client, args.SessionId, args.VirtualLoc)
+		mapper(client, args.SessionId, args.VirtualLoc, args.Location)
 	} else {
-		reducer(client, args.SessionId, args.MapperResults)
+		reducer(client, args.SessionId)
 	}
 }
