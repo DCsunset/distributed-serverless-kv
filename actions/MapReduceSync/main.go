@@ -166,6 +166,13 @@ func main() {
 	json.Unmarshal([]byte(os.Args[1]), &args)
 
 	// Generate new session ID
-	id := rand.Int63()
-	runner(client, id, args.Location)
+	if args.Kind == "runner" {
+		// Generate new session ID
+		id := rand.Int63()
+		runner(client, id, args.Location)
+	} else if args.Kind == "mapper" {
+		mapper(args.Sentence)
+	} else {
+		reducer(args.MapperResults)
+	}
 }
