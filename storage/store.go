@@ -10,11 +10,11 @@ import (
 )
 
 type Node struct {
-	dep        int64
-	children   []int64
-	data       map[string]string // record current updates
-	digest     []byte            // Save Merkle tree inline
-	dataDigest []byte            // Save data digest for comparing itself
+	Dep        int64
+	Children   []int64
+	Data       map[string]string // record current updates
+	Digest     []byte            // Save Merkle tree inline
+	DataDigest []byte            // Save data digest for comparing itself
 }
 
 type Store struct {
@@ -30,10 +30,10 @@ func (s *Store) Init() {
 		// Create a root and map first
 		s.MemLocation = make(map[int64]int64)
 		root := Node{
-			dep:        -1,
-			data:       make(map[string]string),
-			children:   nil,
-			dataDigest: nil,
+			Dep:        -1,
+			Data:       make(map[string]string),
+			Children:   nil,
+			DataDigest: nil,
 		}
 		s.Nodes = append(s.Nodes, root)
 		s.MemLocation[0] = 0
@@ -52,10 +52,10 @@ func (s *Store) newNode(dep int64, data map[string]string, dataDigest []byte) in
 	loc := nodeLocation(dataDigest)
 
 	node := Node{
-		dep:        dep,
-		data:       data,
-		children:   nil,
-		dataDigest: dataDigest,
+		Dep:        dep,
+		Data:       data,
+		Children:   nil,
+		DataDigest: dataDigest,
 	}
 	s.Nodes = append(s.Nodes, node)
 	memLoc := int64(len(s.Nodes)) - 1
@@ -64,7 +64,7 @@ func (s *Store) newNode(dep int64, data map[string]string, dataDigest []byte) in
 
 	// Append to parent's child list
 	parent := s.getNode(dep)
-	parent.children = append(parent.children, loc)
+	parent.Children = append(parent.Children, loc)
 
 	return loc
 }
@@ -79,7 +79,7 @@ func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[st
 	}
 
 	if keys == nil {
-		return node.data
+		return node.Data
 	}
 
 	data := make(map[string]string)
@@ -89,16 +89,16 @@ func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[st
 		for _, key := range keys {
 			_, ok := data[key]
 			if !ok {
-				value, ok := node.data[key]
+				value, ok := node.Data[key]
 				if ok {
 					data[key] = value
 				}
 			}
 		}
-		if node.dep == -1 {
+		if node.Dep == -1 {
 			break
 		}
-		node = s.getNode(node.dep)
+		node = s.getNode(node.Dep)
 	}
 	return data
 }
@@ -147,19 +147,19 @@ func (s *Store) getNode(loc int64) *Node {
 
 func (s *Store) updateHash(loc int64, currentDigest []byte) {
 	node := s.getNode(loc)
-	node.dataDigest = currentDigest
+	node.DataDigest = currentDigest
 	// Update till root
 	for {
 		hash := sha256.New()
-		for _, child := range node.children {
+		for _, child := range node.Children {
 			// Concatenate all digests
-			hash.Write(s.getNode(child).digest)
+			hash.Write(s.getNode(child).Digest)
 		}
-		node.digest = hash.Sum(currentDigest)
-		if node.dep == -1 {
+		node.Digest = hash.Sum(currentDigest)
+		if node.Dep == -1 {
 			break
 		}
-		node = s.getNode(node.dep)
+		node = s.getNode(node.Dep)
 	}
 }
 
@@ -175,12 +175,12 @@ func (s *Store) GetMerkleTree(location int64) []*db.Node {
 		queue = queue[1:]
 		node := s.getNode(currentLocation)
 		nodes = append(nodes, &db.Node{
-			Dep:        node.dep,
-			Digest:     node.digest,
-			DataDigest: node.dataDigest,
-			Children:   node.children,
+			Dep:        node.Dep,
+			Digest:     node.Digest,
+			DataDigest: node.DataDigest,
+			Children:   node.Children,
 		})
-		for _, child := range node.children {
+		for _, child := range node.Children {
 			queue = append(queue, child)
 		}
 	}
@@ -199,13 +199,13 @@ func (s *Store) Download(locations []int64) []*db.Node {
 		queue = queue[1:]
 		node := s.getNode(currentLocation)
 		nodes = append(nodes, &db.Node{
-			Dep:        node.dep,
-			Digest:     node.digest,
-			DataDigest: node.dataDigest,
-			Children:   node.children,
-			Data:       node.data,
+			Dep:        node.Dep,
+			Digest:     node.Digest,
+			DataDigest: node.DataDigest,
+			Children:   node.Children,
+			Data:       node.Data,
 		})
-		for _, child := range node.children {
+		for _, child := range node.Children {
 			queue = append(queue, child)
 		}
 	}
@@ -219,13 +219,13 @@ func (s *Store) Upload(nodes []*db.Node) {
 		location := nodeLocation(node.DataDigest)
 		localNode := s.getNode(location)
 		if localNode != nil {
-			localNode.children = append(localNode.children, node.Children...)
-			s.updateHash(location, localNode.dataDigest)
+			localNode.Children = append(localNode.Children, node.Children...)
+			s.updateHash(location, localNode.DataDigest)
 		} else {
 			loc := s.newNode(node.Dep, node.Data, node.DataDigest)
 			n := s.getNode(loc)
-			n.children = node.Children
-			n.digest = node.Digest
+			n.Children = node.Children
+			n.Digest = node.Digest
 		}
 	}
 }
@@ -269,7 +269,7 @@ func (s *Store) Compare(nodes []*db.Node) []int64 {
 			continue
 		}
 
-		if reflect.DeepEqual(localNode.digest, node.Digest) {
+		if reflect.DeepEqual(localNode.Digest, node.Digest) {
 			sameNodes[location] = true
 			// Add children to sameNodes
 			for _, child := range node.Children {
