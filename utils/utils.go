@@ -17,3 +17,8 @@ func Print(m interface{}) {
 	str, _ := json.Marshal(m)
 	fmt.Println(string(str))
 }
+
+func ToString(m interface{}) string {
+	str, _ := json.Marshal(m)
+	return string(str)
+}
