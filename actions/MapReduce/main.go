@@ -25,8 +25,10 @@ func mapper(client db.DbServiceClient, sessionId int64, virtualLoc int64, locati
 	keys = append(keys, key)
 
 	res, _ := client.Get(context.Background(), &db.GetRequest{
-		Keys: keys,
-		Loc:  location,
+		SessionId:  sessionId,
+		Keys:       keys,
+		Loc:        location,
+		VirtualLoc: -1,
 	})
 
 	words := strings.Fields(res.GetData()[key])
@@ -45,6 +47,7 @@ func mapper(client db.DbServiceClient, sessionId int64, virtualLoc int64, locati
 		Data:       count,
 		VirtualLoc: virtualLoc,
 		Dep:        0,
+		VirtualDep: -1,
 	})
 
 	fmt.Println("{ \"ok\": true }")

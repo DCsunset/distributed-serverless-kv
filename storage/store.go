@@ -118,17 +118,24 @@ func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int6
 	hash := sha256.New()
 	dataBytes, _ := json.Marshal(data)
 	hash.Write(dataBytes)
-	depBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(depBytes, uint64(dep))
-	hash.Write(depBytes)
-	digest := hash.Sum(nil)
+	var digest []byte
 
 	var newLoc int64
 	if virtualDep < 0 {
+		depBytes := make([]byte, 8)
+		binary.BigEndian.PutUint64(depBytes, uint64(dep))
+		hash.Write(depBytes)
+		digest = hash.Sum(nil)
+
 		newLoc = s.newNode(dep, data, digest)
 		s.addToLocMap(id, virtualLoc, newLoc)
 	} else {
 		realDep := s.LocMap[id][virtualDep]
+		depBytes := make([]byte, 8)
+		binary.BigEndian.PutUint64(depBytes, uint64(realDep))
+		hash.Write(depBytes)
+		digest = hash.Sum(nil)
+
 		newLoc = s.newNode(realDep, data, digest)
 	}
 
