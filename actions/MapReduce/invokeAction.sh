@@ -6,4 +6,4 @@ export ACTION=mapreduce
 
 BODY='{ "kind": "runner", "location": -7441470632338879788 }'
 
-curl --insecure -X POST -u $AUTH -H "Content-Type: application/json" -d "$BODY" "https://$APIHOST/api/v1/namespaces/guest/actions/$ACTION?blocking=true&result=true"
+time curl --insecure -X POST -u $AUTH -H "Content-Type: application/json" -d "$BODY" "https://$APIHOST/api/v1/namespaces/guest/actions/$ACTION?blocking=true&result=true"
