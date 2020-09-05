@@ -31,7 +31,7 @@ func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, e
 	}
 
 	if address == "local" {
-		value, err := store.Get(in.SessionId, in.Key, in.Loc, in.VirtualLoc)
+		value, err := store.Get(in.SessionId, in.Key, in.Loc)
 		return &db.GetResponse{Value: value}, err
 	} else {
 		// Forward request to the correct server
@@ -53,7 +53,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 	}
 
 	if address == "local" {
-		loc := store.Set(in.SessionId, in.Key, in.Value, in.VirtualLoc, in.Dep, in.VirtualDep)
+		loc := store.Set(in.SessionId, in.Key, in.Value, in.Dep)
 		return &db.SetResponse{Loc: loc}, nil
 	} else {
 		// Forward request to the correct server
@@ -109,30 +109,26 @@ func (s *Server) split() {
 		for _, node := range store.Nodes {
 			if node.KeyHash > mid {
 				results = append(results, &db.Node{
-					Dep:        node.Dep,
-					Digest:     node.Digest,
-					DataDigest: node.DataDigest,
-					Children:   node.Children,
-					Key:        node.Key,
-					KeyHash:    node.KeyHash,
-					Value:      node.Value,
+					Dep:     node.Dep,
+					Digest:  node.Digest,
+					Key:     node.Key,
+					KeyHash: node.KeyHash,
+					Value:   node.Value,
 				})
-				store.RemoveNode(node.DataDigest)
+				store.RemoveNode(node.Digest)
 			}
 		}
 	} else {
 		for _, node := range store.Nodes {
 			if node.KeyHash < mid {
 				results = append(results, &db.Node{
-					Dep:        node.Dep,
-					Digest:     node.Digest,
-					DataDigest: node.DataDigest,
-					Children:   node.Children,
-					Key:        node.Key,
-					KeyHash:    node.KeyHash,
-					Value:      node.Value,
+					Dep:     node.Dep,
+					Digest:  node.Digest,
+					Key:     node.Key,
+					KeyHash: node.KeyHash,
+					Value:   node.Value,
 				})
-				store.RemoveNode(node.DataDigest)
+				store.RemoveNode(node.Digest)
 			}
 		}
 	}
@@ -154,19 +150,4 @@ func (s *Server) split() {
 func (s *Server) AddNodes(ctx context.Context, in *db.AddNodesRequest) (*db.AddNodesResponse, error) {
 	store.AddNodes(in.Nodes)
 	return &db.AddNodesResponse{}, nil
-}
-
-func (s *Server) GetMerkleTree(ctx context.Context, in *db.GetMerkleTreeRequest) (*db.GetMerkleTreeResponse, error) {
-	nodes := store.GetMerkleTree(in.Location)
-	return &db.GetMerkleTreeResponse{Nodes: nodes}, nil
-}
-
-func (s *Server) Download(ctx context.Context, in *db.DownloadRequest) (*db.DownloadResponse, error) {
-	nodes := store.Download(in.Locations)
-	return &db.DownloadResponse{Nodes: nodes}, nil
-}
-
-func (s *Server) Upload(ctx context.Context, in *db.UploadRequest) (*db.UploadResponse, error) {
-	store.Upload(in.Nodes)
-	return &db.UploadResponse{}, nil
 }
