@@ -1,20 +1,25 @@
 package storage
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"reflect"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
+	"github.com/DCsunset/openwhisk-grpc/utils"
 )
 
 type Node struct {
 	Dep        int64
 	Children   []int64
-	Data       map[string]string // record current updates
-	Digest     []byte            // Save Merkle tree inline
-	DataDigest []byte            // Save data digest for comparing itself
+	Key        string
+	KeyHash    int64 // The hash of the key
+	Value      string
+	Digest     []byte // Save Merkle tree inline
+	DataDigest []byte // Save data digest for comparing itself
 }
 
 type Store struct {
@@ -31,7 +36,6 @@ func (s *Store) Init() {
 		s.MemLocation = make(map[int64]int64)
 		root := Node{
 			Dep:        -1,
-			Data:       make(map[string]string),
 			Children:   nil,
 			DataDigest: nil,
 		}
@@ -40,20 +44,15 @@ func (s *Store) Init() {
 	}
 }
 
-func nodeLocation(dataDigest []byte) int64 {
-	if dataDigest == nil {
-		return 0
-	}
-	return int64(binary.BigEndian.Uint64(dataDigest[:8]))
-}
-
-func (s *Store) newNode(dep int64, data map[string]string, dataDigest []byte) int64 {
+func (s *Store) newNode(dep int64, key string, value string, dataDigest []byte) int64 {
 	// Use hash location
-	loc := nodeLocation(dataDigest)
+	loc := utils.Hash2int(dataDigest)
 
 	node := Node{
 		Dep:        dep,
-		Data:       data,
+		Key:        key,
+		KeyHash:    utils.Hash2int(utils.Hash([]byte(key))),
+		Value:      value,
 		Children:   nil,
 		DataDigest: dataDigest,
 	}
@@ -69,7 +68,7 @@ func (s *Store) newNode(dep int64, data map[string]string, dataDigest []byte) in
 	return loc
 }
 
-func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[string]string {
+func (s *Store) Get(id int64, key string, loc int64, virtualLoc int64) (string, error) {
 	var node *Node
 	if virtualLoc < 0 {
 		node = s.getNode(loc)
@@ -78,29 +77,17 @@ func (s *Store) Get(id int64, keys []string, loc int64, virtualLoc int64) map[st
 		node = s.getNode(realLoc)
 	}
 
-	if keys == nil {
-		return node.Data
-	}
-
-	data := make(map[string]string)
-
 	// Find till root
 	for {
-		for _, key := range keys {
-			_, ok := data[key]
-			if !ok {
-				value, ok := node.Data[key]
-				if ok {
-					data[key] = value
-				}
-			}
+		if node.Key == key {
+			return node.Value, nil
 		}
 		if node.Dep == -1 {
 			break
 		}
 		node = s.getNode(node.Dep)
 	}
-	return data
+	return "", fmt.Errorf("Key %s not found", key)
 }
 
 func (s *Store) addToLocMap(id int64, virtualLoc int64, loc int64) {
@@ -113,10 +100,15 @@ func (s *Store) addToLocMap(id int64, virtualLoc int64, loc int64) {
 	s.LocMap[id][virtualLoc] = loc
 }
 
-func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int64, virtualDep int64) int64 {
+type Pair struct {
+	key   string
+	value string
+}
+
+func (s *Store) Set(id int64, key string, value string, virtualLoc int64, dep int64, virtualDep int64) int64 {
 	// Compute hash
 	hash := sha256.New()
-	dataBytes, _ := json.Marshal(data)
+	dataBytes, _ := json.Marshal(Pair{key: key, value: value})
 	hash.Write(dataBytes)
 	var digest []byte
 
@@ -127,7 +119,7 @@ func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int6
 		hash.Write(depBytes)
 		digest = hash.Sum(nil)
 
-		newLoc = s.newNode(dep, data, digest)
+		newLoc = s.newNode(dep, key, value, digest)
 		s.addToLocMap(id, virtualLoc, newLoc)
 	} else {
 		realDep := s.LocMap[id][virtualDep]
@@ -136,7 +128,7 @@ func (s *Store) Set(id int64, data map[string]string, virtualLoc int64, dep int6
 		hash.Write(depBytes)
 		digest = hash.Sum(nil)
 
-		newLoc = s.newNode(realDep, data, digest)
+		newLoc = s.newNode(realDep, key, value, digest)
 	}
 
 	s.updateHash(newLoc, digest)
@@ -210,7 +202,9 @@ func (s *Store) Download(locations []int64) []*db.Node {
 			Digest:     node.Digest,
 			DataDigest: node.DataDigest,
 			Children:   node.Children,
-			Data:       node.Data,
+			Key:        node.Key,
+			KeyHash:    node.KeyHash,
+			Value:      node.Value,
 		})
 		for _, child := range node.Children {
 			queue = append(queue, child)
@@ -221,15 +215,32 @@ func (s *Store) Download(locations []int64) []*db.Node {
 	return nodes
 }
 
+func (s *Store) AddNodes(nodes []*db.Node) {
+	for _, node := range nodes {
+		s.newNode(node.Dep, node.Key, node.Value, node.DataDigest)
+	}
+}
+
+func (s *Store) RemoveNode(dataDigest []byte) {
+	for i, node := range s.Nodes {
+		if bytes.Compare(node.DataDigest, dataDigest) == 0 {
+			l := len(s.Nodes)
+			s.Nodes[l-1], s.Nodes[i] = s.Nodes[i], s.Nodes[l-1]
+			s.Nodes = s.Nodes[:l-1]
+			return
+		}
+	}
+}
+
 func (s *Store) Upload(nodes []*db.Node) {
 	for _, node := range nodes {
-		location := nodeLocation(node.DataDigest)
+		location := utils.Hash2int(node.DataDigest)
 		localNode := s.getNode(location)
 		if localNode != nil {
 			localNode.Children = append(localNode.Children, node.Children...)
 			s.updateHash(location, localNode.DataDigest)
 		} else {
-			loc := s.newNode(node.Dep, node.Data, node.DataDigest)
+			loc := s.newNode(node.Dep, node.Key, node.Value, node.DataDigest)
 			n := s.getNode(loc)
 			n.Children = node.Children
 			n.Digest = node.Digest
@@ -246,7 +257,7 @@ func (s *Store) Compare(nodes []*db.Node) []int64 {
 	var results []int64
 
 	for _, node := range nodes {
-		location := nodeLocation(node.DataDigest)
+		location := utils.Hash2int(node.DataDigest)
 		_, ok := outdatedNodes[location]
 		if ok {
 			// Add children to outdatedNodes
