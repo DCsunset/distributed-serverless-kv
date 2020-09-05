@@ -3,26 +3,25 @@ package db;
 
 message GetRequest {
     int64 SessionId = 1;
-    // Empty to get all keys at location
-    repeated string Keys = 2;
+    // Empty to get key at location
+    string Key = 2;
     int64 Loc = 3;
     int64 VirtualLoc = 4;
 }
 message GetResponse {
-    // Key-value pairs
-    map<string, string> Data = 1;
+    string Value = 1;
 }
 
 message SetRequest {
     int64 SessionId = 1;
-    // Key-value pairs
-    map<string, string> Data = 2;
+    string Key = 2;
+    string Value = 3;
     // Its virtual location (must >= 0 if used, < 0 means not used)
-    int64 VirtualLoc = 3;
+    int64 VirtualLoc = 4;
     // Dependent location
-    int64 Dep = 4;
+    int64 Dep = 5;
     // Dependent virtual location (must >= 0 if used, < 0 means not used)
-    int64 VirtualDep = 5;
+    int64 VirtualDep = 6;
 }
 message SetResponse {
     // Location of the changes
@@ -33,9 +32,18 @@ message Node {
     // Parent location
     int64 Dep = 1;
     repeated int64 Children = 2;
-    map<string, string> Data = 3;
-    bytes Digest = 4;
-    bytes DataDigest = 5;
+    string Key = 3;
+    int64 KeyHash = 4;
+    string Value = 5;
+    bytes Digest = 6;
+    bytes DataDigest = 7;
+}
+
+message AddNodesRequest {
+    repeated Node Nodes = 1;
+}
+
+message AddNodesResponse {
 }
 
 message UploadRequest {
@@ -66,6 +74,7 @@ message GetMerkleTreeResponse {
 service DbService {
     rpc Get(GetRequest) returns (GetResponse) {}
     rpc Set(SetRequest) returns (SetResponse) {}
+    rpc AddNodes(AddNodesRequest) returns (AddNodesResponse) {}
     rpc Upload(UploadRequest) returns (UploadResponse) {}
     rpc Download(DownloadRequest) returns (DownloadResponse) {}
     rpc GetMerkleTree(GetMerkleTreeRequest) returns (GetMerkleTreeResponse) {}
