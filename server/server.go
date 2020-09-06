@@ -13,8 +13,10 @@ import (
 )
 
 type Server struct {
-	availableServers []string
-	servers          []string
+	Servers          []string `json:"servers"`
+	AvailableServers []string `json:"availableServers"`
+	// Self address
+	Self string `json:"self"`
 }
 
 var store = storage.Store{}
@@ -30,7 +32,7 @@ func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, e
 		return &db.GetResponse{}, err
 	}
 
-	if address == "local" {
+	if address == s.Self {
 		value, err := store.Get(in.SessionId, in.Key, in.Loc)
 		return &db.GetResponse{Value: value}, err
 	} else {
@@ -52,7 +54,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 		return &db.SetResponse{}, err
 	}
 
-	if address == "local" {
+	if address == s.Self {
 		loc := store.Set(in.SessionId, in.Key, in.Value, in.Dep)
 		return &db.SetResponse{Loc: loc}, nil
 	} else {
@@ -70,7 +72,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 
 // Split based on key range
 func (s *Server) split() {
-	if len(s.availableServers) == 0 {
+	if len(s.AvailableServers) == 0 {
 		return
 	}
 
@@ -133,7 +135,7 @@ func (s *Server) split() {
 		}
 	}
 
-	server := s.availableServers[rand.Intn(len(s.availableServers))]
+	server := s.AvailableServers[rand.Intn(len(s.AvailableServers))]
 	// Forward request to the correct server
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
 	if err != nil {
