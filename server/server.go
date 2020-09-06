@@ -46,10 +46,7 @@ func (s *Server) Init() {
 }
 
 func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, error) {
-	address, err := indexingService.LocateKey(in.Key)
-	if err != nil {
-		return &db.GetResponse{}, err
-	}
+	address := indexingService.LocateKey(in.Key)
 
 	if address == s.Self {
 		value, err := store.Get(in.SessionId, in.Key, in.Loc)
@@ -68,10 +65,7 @@ func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, e
 }
 
 func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, error) {
-	address, err := indexingService.LocateKey(in.Key)
-	if err != nil {
-		return &db.SetResponse{}, err
-	}
+	address := indexingService.LocateKey(in.Key)
 
 	if address == s.Self {
 		loc := store.Set(in.SessionId, in.Key, in.Value, in.Dep)
