@@ -22,6 +22,8 @@ type Server struct {
 	Self string `json:"self"`
 	// Initial server
 	Initial string `json:"initial"`
+	// Split threshold
+	Threshold int `json:"threshold"`
 }
 
 var store = storage.Store{}
@@ -69,6 +71,9 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 
 	if address == s.Self {
 		loc := store.Set(in.SessionId, in.Key, in.Value, in.Dep)
+		if len(store.Nodes) > s.Threshold {
+			s.splitKeys()
+		}
 		return &db.SetResponse{Loc: loc}, nil
 	} else {
 		// Forward request to the correct server
@@ -79,7 +84,11 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 		defer conn.Close()
 		client := db.NewDbServiceClient(conn)
 
-		return client.Set(ctx, in)
+		resp, err := client.Set(ctx, in)
+		if len(store.Nodes) > s.Threshold {
+			s.splitKeys()
+		}
+		return resp, err
 	}
 }
 
