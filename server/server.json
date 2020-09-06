@@ -1,0 +1,5 @@
+{
+	"servers": ["aqua02", "aqua03", "aqua04", "aqua05"],
+	"availableServers": ["aqua02", "aqua03", "aqua04", "aqua05"],
+	"self": "aqua02"
+}

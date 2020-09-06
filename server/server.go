@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"sort"
@@ -24,6 +26,13 @@ var indexingService = indexing.Service{}
 
 func (s *Server) Init() {
 	store.Init()
+
+	// Server configuration
+	data, err := ioutil.ReadFile("./server.json")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	json.Unmarshal(data, s)
 }
 
 func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, error) {
