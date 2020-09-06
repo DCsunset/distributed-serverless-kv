@@ -451,17 +451,21 @@ func (*AddNodesResponse) Descriptor() ([]byte, []int) {
 	return file_db_proto_rawDescGZIP(), []int{6}
 }
 
-type UploadRequest struct {
+type SplitRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Nodes to append to the location
-	Nodes []*Node `protobuf:"bytes,1,rep,name=Nodes,proto3" json:"Nodes,omitempty"`
+	// [L, Mid], [Mid + 1, R]
+	Left        int64  `protobuf:"varint,1,opt,name=Left,proto3" json:"Left,omitempty"`
+	Right       int64  `protobuf:"varint,2,opt,name=Right,proto3" json:"Right,omitempty"`
+	Mid         int64  `protobuf:"varint,3,opt,name=Mid,proto3" json:"Mid,omitempty"`
+	LeftServer  string `protobuf:"bytes,4,opt,name=LeftServer,proto3" json:"LeftServer,omitempty"`
+	RightServer string `protobuf:"bytes,5,opt,name=RightServer,proto3" json:"RightServer,omitempty"`
 }
 
-func (x *UploadRequest) Reset() {
-	*x = UploadRequest{}
+func (x *SplitRequest) Reset() {
+	*x = SplitRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_db_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -469,13 +473,13 @@ func (x *UploadRequest) Reset() {
 	}
 }
 
-func (x *UploadRequest) String() string {
+func (x *SplitRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UploadRequest) ProtoMessage() {}
+func (*SplitRequest) ProtoMessage() {}
 
-func (x *UploadRequest) ProtoReflect() protoreflect.Message {
+func (x *SplitRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_db_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -487,26 +491,54 @@ func (x *UploadRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UploadRequest.ProtoReflect.Descriptor instead.
-func (*UploadRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use SplitRequest.ProtoReflect.Descriptor instead.
+func (*SplitRequest) Descriptor() ([]byte, []int) {
 	return file_db_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *UploadRequest) GetNodes() []*Node {
+func (x *SplitRequest) GetLeft() int64 {
 	if x != nil {
-		return x.Nodes
+		return x.Left
 	}
-	return nil
+	return 0
 }
 
-type UploadResponse struct {
+func (x *SplitRequest) GetRight() int64 {
+	if x != nil {
+		return x.Right
+	}
+	return 0
+}
+
+func (x *SplitRequest) GetMid() int64 {
+	if x != nil {
+		return x.Mid
+	}
+	return 0
+}
+
+func (x *SplitRequest) GetLeftServer() string {
+	if x != nil {
+		return x.LeftServer
+	}
+	return ""
+}
+
+func (x *SplitRequest) GetRightServer() string {
+	if x != nil {
+		return x.RightServer
+	}
+	return ""
+}
+
+type SplitResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *UploadResponse) Reset() {
-	*x = UploadResponse{}
+func (x *SplitResponse) Reset() {
+	*x = SplitResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_db_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -514,13 +546,13 @@ func (x *UploadResponse) Reset() {
 	}
 }
 
-func (x *UploadResponse) String() string {
+func (x *SplitResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UploadResponse) ProtoMessage() {}
+func (*SplitResponse) ProtoMessage() {}
 
-func (x *UploadResponse) ProtoReflect() protoreflect.Message {
+func (x *SplitResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_db_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -532,201 +564,9 @@ func (x *UploadResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UploadResponse.ProtoReflect.Descriptor instead.
-func (*UploadResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use SplitResponse.ProtoReflect.Descriptor instead.
+func (*SplitResponse) Descriptor() ([]byte, []int) {
 	return file_db_proto_rawDescGZIP(), []int{8}
-}
-
-type DownloadRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Download from locations
-	Locations []int64 `protobuf:"varint,1,rep,packed,name=Locations,proto3" json:"Locations,omitempty"`
-}
-
-func (x *DownloadRequest) Reset() {
-	*x = DownloadRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_db_proto_msgTypes[9]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DownloadRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DownloadRequest) ProtoMessage() {}
-
-func (x *DownloadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_db_proto_msgTypes[9]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DownloadRequest.ProtoReflect.Descriptor instead.
-func (*DownloadRequest) Descriptor() ([]byte, []int) {
-	return file_db_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *DownloadRequest) GetLocations() []int64 {
-	if x != nil {
-		return x.Locations
-	}
-	return nil
-}
-
-type DownloadResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Nodes from the location
-	Nodes []*Node `protobuf:"bytes,1,rep,name=Nodes,proto3" json:"Nodes,omitempty"`
-}
-
-func (x *DownloadResponse) Reset() {
-	*x = DownloadResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_db_proto_msgTypes[10]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DownloadResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DownloadResponse) ProtoMessage() {}
-
-func (x *DownloadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_db_proto_msgTypes[10]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DownloadResponse.ProtoReflect.Descriptor instead.
-func (*DownloadResponse) Descriptor() ([]byte, []int) {
-	return file_db_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *DownloadResponse) GetNodes() []*Node {
-	if x != nil {
-		return x.Nodes
-	}
-	return nil
-}
-
-type GetMerkleTreeRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Tree from location
-	Location int64 `protobuf:"varint,1,opt,name=Location,proto3" json:"Location,omitempty"`
-}
-
-func (x *GetMerkleTreeRequest) Reset() {
-	*x = GetMerkleTreeRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_db_proto_msgTypes[11]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetMerkleTreeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMerkleTreeRequest) ProtoMessage() {}
-
-func (x *GetMerkleTreeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_db_proto_msgTypes[11]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMerkleTreeRequest.ProtoReflect.Descriptor instead.
-func (*GetMerkleTreeRequest) Descriptor() ([]byte, []int) {
-	return file_db_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *GetMerkleTreeRequest) GetLocation() int64 {
-	if x != nil {
-		return x.Location
-	}
-	return 0
-}
-
-type GetMerkleTreeResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Nodes (containing only children, digest and dep)
-	Nodes []*Node `protobuf:"bytes,1,rep,name=Nodes,proto3" json:"Nodes,omitempty"`
-}
-
-func (x *GetMerkleTreeResponse) Reset() {
-	*x = GetMerkleTreeResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_db_proto_msgTypes[12]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetMerkleTreeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMerkleTreeResponse) ProtoMessage() {}
-
-func (x *GetMerkleTreeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_db_proto_msgTypes[12]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMerkleTreeResponse.ProtoReflect.Descriptor instead.
-func (*GetMerkleTreeResponse) Descriptor() ([]byte, []int) {
-	return file_db_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *GetMerkleTreeResponse) GetNodes() []*Node {
-	if x != nil {
-		return x.Nodes
-	}
-	return nil
 }
 
 var File_db_proto protoreflect.FileDescriptor
@@ -766,34 +606,30 @@ var file_db_proto_rawDesc = []byte{
 	0x73, 0x74, 0x12, 0x1e, 0x0a, 0x05, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
 	0x0b, 0x32, 0x08, 0x2e, 0x64, 0x62, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x4e, 0x6f, 0x64,
 	0x65, 0x73, 0x22, 0x12, 0x0a, 0x10, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x2f, 0x0a, 0x0d, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1e, 0x0a, 0x05, 0x4e, 0x6f, 0x64, 0x65, 0x73,
-	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x08, 0x2e, 0x64, 0x62, 0x2e, 0x4e, 0x6f, 0x64, 0x65,
-	0x52, 0x05, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x22, 0x10, 0x0a, 0x0e, 0x55, 0x70, 0x6c, 0x6f, 0x61,
-	0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x2f, 0x0a, 0x0f, 0x44, 0x6f, 0x77,
-	0x6e, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1c, 0x0a, 0x09,
-	0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x03, 0x52,
-	0x09, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x22, 0x32, 0x0a, 0x10, 0x44, 0x6f,
-	0x77, 0x6e, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1e,
-	0x0a, 0x05, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x08, 0x2e,
-	0x64, 0x62, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x22, 0x32,
-	0x0a, 0x14, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x72, 0x6b, 0x6c, 0x65, 0x54, 0x72, 0x65, 0x65, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x22, 0x37, 0x0a, 0x15, 0x47, 0x65, 0x74, 0x4d, 0x65, 0x72, 0x6b, 0x6c, 0x65, 0x54,
-	0x72, 0x65, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1e, 0x0a, 0x05, 0x4e,
-	0x6f, 0x64, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x08, 0x2e, 0x64, 0x62, 0x2e,
-	0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x32, 0x98, 0x01, 0x0a, 0x09,
-	0x44, 0x62, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x28, 0x0a, 0x03, 0x47, 0x65, 0x74,
-	0x12, 0x0e, 0x2e, 0x64, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x0f, 0x2e, 0x64, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x22, 0x00, 0x12, 0x28, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x0e, 0x2e, 0x64, 0x62, 0x2e,
-	0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x64, 0x62, 0x2e,
-	0x53, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x37, 0x0a,
-	0x08, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x13, 0x2e, 0x64, 0x62, 0x2e, 0x41,
-	0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14,
-	0x2e, 0x64, 0x62, 0x2e, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x8c, 0x01, 0x0a, 0x0c, 0x53, 0x70, 0x6c, 0x69, 0x74,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x4c, 0x65, 0x66, 0x74, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x04, 0x4c, 0x65, 0x66, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x52,
+	0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x52, 0x69, 0x67, 0x68,
+	0x74, 0x12, 0x10, 0x0a, 0x03, 0x4d, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03,
+	0x4d, 0x69, 0x64, 0x12, 0x1e, 0x0a, 0x0a, 0x4c, 0x65, 0x66, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x4c, 0x65, 0x66, 0x74, 0x53, 0x65, 0x72,
+	0x76, 0x65, 0x72, 0x12, 0x20, 0x0a, 0x0b, 0x52, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x72, 0x76,
+	0x65, 0x72, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x52, 0x69, 0x67, 0x68, 0x74, 0x53,
+	0x65, 0x72, 0x76, 0x65, 0x72, 0x22, 0x0f, 0x0a, 0x0d, 0x53, 0x70, 0x6c, 0x69, 0x74, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xc8, 0x01, 0x0a, 0x09, 0x44, 0x62, 0x53, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x12, 0x28, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x0e, 0x2e, 0x64, 0x62,
+	0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x64, 0x62,
+	0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x28,
+	0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x0e, 0x2e, 0x64, 0x62, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x64, 0x62, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x37, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x4e,
+	0x6f, 0x64, 0x65, 0x73, 0x12, 0x13, 0x2e, 0x64, 0x62, 0x2e, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64,
+	0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x64, 0x62, 0x2e, 0x41,
+	0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x00, 0x12, 0x2e, 0x0a, 0x05, 0x53, 0x70, 0x6c, 0x69, 0x74, 0x12, 0x10, 0x2e, 0x64, 0x62, 0x2e,
+	0x53, 0x70, 0x6c, 0x69, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x11, 0x2e, 0x64,
+	0x62, 0x2e, 0x53, 0x70, 0x6c, 0x69, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x00, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -808,38 +644,33 @@ func file_db_proto_rawDescGZIP() []byte {
 	return file_db_proto_rawDescData
 }
 
-var file_db_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_db_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_db_proto_goTypes = []interface{}{
-	(*GetRequest)(nil),            // 0: db.GetRequest
-	(*GetResponse)(nil),           // 1: db.GetResponse
-	(*SetRequest)(nil),            // 2: db.SetRequest
-	(*SetResponse)(nil),           // 3: db.SetResponse
-	(*Node)(nil),                  // 4: db.Node
-	(*AddNodesRequest)(nil),       // 5: db.AddNodesRequest
-	(*AddNodesResponse)(nil),      // 6: db.AddNodesResponse
-	(*UploadRequest)(nil),         // 7: db.UploadRequest
-	(*UploadResponse)(nil),        // 8: db.UploadResponse
-	(*DownloadRequest)(nil),       // 9: db.DownloadRequest
-	(*DownloadResponse)(nil),      // 10: db.DownloadResponse
-	(*GetMerkleTreeRequest)(nil),  // 11: db.GetMerkleTreeRequest
-	(*GetMerkleTreeResponse)(nil), // 12: db.GetMerkleTreeResponse
+	(*GetRequest)(nil),       // 0: db.GetRequest
+	(*GetResponse)(nil),      // 1: db.GetResponse
+	(*SetRequest)(nil),       // 2: db.SetRequest
+	(*SetResponse)(nil),      // 3: db.SetResponse
+	(*Node)(nil),             // 4: db.Node
+	(*AddNodesRequest)(nil),  // 5: db.AddNodesRequest
+	(*AddNodesResponse)(nil), // 6: db.AddNodesResponse
+	(*SplitRequest)(nil),     // 7: db.SplitRequest
+	(*SplitResponse)(nil),    // 8: db.SplitResponse
 }
 var file_db_proto_depIdxs = []int32{
 	4, // 0: db.AddNodesRequest.Nodes:type_name -> db.Node
-	4, // 1: db.UploadRequest.Nodes:type_name -> db.Node
-	4, // 2: db.DownloadResponse.Nodes:type_name -> db.Node
-	4, // 3: db.GetMerkleTreeResponse.Nodes:type_name -> db.Node
-	0, // 4: db.DbService.Get:input_type -> db.GetRequest
-	2, // 5: db.DbService.Set:input_type -> db.SetRequest
-	5, // 6: db.DbService.AddNodes:input_type -> db.AddNodesRequest
-	1, // 7: db.DbService.Get:output_type -> db.GetResponse
-	3, // 8: db.DbService.Set:output_type -> db.SetResponse
-	6, // 9: db.DbService.AddNodes:output_type -> db.AddNodesResponse
-	7, // [7:10] is the sub-list for method output_type
-	4, // [4:7] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	0, // 1: db.DbService.Get:input_type -> db.GetRequest
+	2, // 2: db.DbService.Set:input_type -> db.SetRequest
+	5, // 3: db.DbService.AddNodes:input_type -> db.AddNodesRequest
+	7, // 4: db.DbService.Split:input_type -> db.SplitRequest
+	1, // 5: db.DbService.Get:output_type -> db.GetResponse
+	3, // 6: db.DbService.Set:output_type -> db.SetResponse
+	6, // 7: db.DbService.AddNodes:output_type -> db.AddNodesResponse
+	8, // 8: db.DbService.Split:output_type -> db.SplitResponse
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_db_proto_init() }
@@ -933,7 +764,7 @@ func file_db_proto_init() {
 			}
 		}
 		file_db_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UploadRequest); i {
+			switch v := v.(*SplitRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -945,55 +776,7 @@ func file_db_proto_init() {
 			}
 		}
 		file_db_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UploadResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_db_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DownloadRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_db_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DownloadResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_db_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMerkleTreeRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_db_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMerkleTreeResponse); i {
+			switch v := v.(*SplitResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1011,7 +794,7 @@ func file_db_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_db_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -1040,6 +823,7 @@ type DbServiceClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error)
 	AddNodes(ctx context.Context, in *AddNodesRequest, opts ...grpc.CallOption) (*AddNodesResponse, error)
+	Split(ctx context.Context, in *SplitRequest, opts ...grpc.CallOption) (*SplitResponse, error)
 }
 
 type dbServiceClient struct {
@@ -1077,11 +861,21 @@ func (c *dbServiceClient) AddNodes(ctx context.Context, in *AddNodesRequest, opt
 	return out, nil
 }
 
+func (c *dbServiceClient) Split(ctx context.Context, in *SplitRequest, opts ...grpc.CallOption) (*SplitResponse, error) {
+	out := new(SplitResponse)
+	err := c.cc.Invoke(ctx, "/db.DbService/Split", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DbServiceServer is the server API for DbService service.
 type DbServiceServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Set(context.Context, *SetRequest) (*SetResponse, error)
 	AddNodes(context.Context, *AddNodesRequest) (*AddNodesResponse, error)
+	Split(context.Context, *SplitRequest) (*SplitResponse, error)
 }
 
 // UnimplementedDbServiceServer can be embedded to have forward compatible implementations.
@@ -1096,6 +890,9 @@ func (*UnimplementedDbServiceServer) Set(context.Context, *SetRequest) (*SetResp
 }
 func (*UnimplementedDbServiceServer) AddNodes(context.Context, *AddNodesRequest) (*AddNodesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddNodes not implemented")
+}
+func (*UnimplementedDbServiceServer) Split(context.Context, *SplitRequest) (*SplitResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Split not implemented")
 }
 
 func RegisterDbServiceServer(s *grpc.Server, srv DbServiceServer) {
@@ -1156,6 +953,24 @@ func _DbService_AddNodes_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DbService_Split_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SplitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DbServiceServer).Split(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/db.DbService/Split",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DbServiceServer).Split(ctx, req.(*SplitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _DbService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "db.DbService",
 	HandlerType: (*DbServiceServer)(nil),
@@ -1171,6 +986,10 @@ var _DbService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddNodes",
 			Handler:    _DbService_AddNodes_Handler,
+		},
+		{
+			MethodName: "Split",
+			Handler:    _DbService_Split_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

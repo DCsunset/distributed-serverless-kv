@@ -44,33 +44,21 @@ message AddNodesRequest {
 message AddNodesResponse {
 }
 
-message UploadRequest {
-    // Nodes to append to the location
-    repeated Node Nodes = 1;
-}
-message UploadResponse {
-}
-
-message DownloadRequest {
-    // Download from locations
-    repeated int64 Locations = 1;
-}
-message DownloadResponse {
-    // Nodes from the location
-    repeated Node Nodes = 1;
+message SplitRequest {
+    // [L, Mid], [Mid + 1, R]
+    int64 Left = 1;
+    int64 Right = 2;
+    int64 Mid = 3;
+    string LeftServer = 4;
+    string RightServer = 5;
 }
 
-message GetMerkleTreeRequest {
-    // Tree from location
-    int64 Location = 1;
-}
-message GetMerkleTreeResponse {
-    // Nodes (containing only children, digest and dep)
-    repeated Node Nodes = 1;
+message SplitResponse {
 }
 
 service DbService {
     rpc Get(GetRequest) returns (GetResponse) {}
     rpc Set(SetRequest) returns (SetResponse) {}
     rpc AddNodes(AddNodesRequest) returns (AddNodesResponse) {}
+    rpc Split(SplitRequest) returns (SplitResponse) {}
 }
