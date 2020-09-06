@@ -38,10 +38,11 @@ func (s *Server) Init() {
 	json.Unmarshal(data, s)
 
 	// Use initial server first
-	indexingService.AddMapping(indexing.Range{
-		L: math.MinInt64,
-		R: math.MaxInt64,
-	}, s.Initial)
+	indexingService.AddMapping(
+		math.MinInt64,
+		math.MaxInt64,
+		s.Initial,
+	)
 }
 
 func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, error) {
@@ -88,8 +89,16 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 	}
 }
 
+// [l, m] [m+1, r]
+func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.SplitResponse, error) {
+	indexingService.RemoveMapping(in.Left, in.Right)
+	indexingService.AddMapping(in.Left, in.Mid, in.LeftServer)
+	indexingService.AddMapping(in.Mid+1, in.Right, in.RightServer)
+	return &db.SplitResponse{}, nil
+}
+
 // Split based on key range
-func (s *Server) split() {
+func (s *Server) splitKeys() {
 	if len(s.AvailableServers) == 0 {
 		return
 	}
@@ -124,6 +133,8 @@ func (s *Server) split() {
 		return
 	}
 
+	server := s.AvailableServers[rand.Intn(len(s.AvailableServers))]
+	var leftServer, rightServer string
 	var results []*db.Node
 	if greater >= less {
 		for _, node := range store.Nodes {
@@ -138,6 +149,8 @@ func (s *Server) split() {
 				store.RemoveNode(node.Digest)
 			}
 		}
+		rightServer = server
+		leftServer = s.Self
 	} else {
 		for _, node := range store.Nodes {
 			if node.KeyHash < mid {
@@ -151,9 +164,11 @@ func (s *Server) split() {
 				store.RemoveNode(node.Digest)
 			}
 		}
+		mid -= 1
+		rightServer = s.Self
+		leftServer = server
 	}
 
-	server := s.AvailableServers[rand.Intn(len(s.AvailableServers))]
 	// Forward request to the correct server
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
 	if err != nil {
@@ -165,7 +180,37 @@ func (s *Server) split() {
 	client.AddNodes(context.Background(), &db.AddNodesRequest{
 		Nodes: results,
 	})
-	// TODO: Update indexing server
+
+	// Update indexing server
+	left, right := indexingService.Range(s.Self)
+	ctx := context.Background()
+	request := &db.SplitRequest{
+		Left:        left,
+		Right:       right,
+		Mid:         mid,
+		LeftServer:  leftServer,
+		RightServer: rightServer,
+	}
+
+	for _, addr := range s.Servers {
+		if addr == s.Self {
+			s.Split(ctx, request)
+		} else if addr == server {
+			client.Split(ctx, request)
+		} else {
+			// Forward request to all servers
+			conn, err := grpc.Dial(addr, grpc.WithInsecure())
+			if err != nil {
+				log.Fatalln(err)
+			}
+			defer conn.Close()
+			client := db.NewDbServiceClient(conn)
+
+			client.AddNodes(context.Background(), &db.AddNodesRequest{
+				Nodes: results,
+			})
+		}
+	}
 }
 
 func (s *Server) AddNodes(ctx context.Context, in *db.AddNodesRequest) (*db.AddNodesResponse, error) {
