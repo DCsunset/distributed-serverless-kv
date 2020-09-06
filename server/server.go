@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math"
 	"math/rand"
 	"sort"
 
@@ -19,6 +20,8 @@ type Server struct {
 	AvailableServers []string `json:"availableServers"`
 	// Self address
 	Self string `json:"self"`
+	// Initial server
+	Initial string `json:"initial"`
 }
 
 var store = storage.Store{}
@@ -33,6 +36,12 @@ func (s *Server) Init() {
 		log.Fatalln(err)
 	}
 	json.Unmarshal(data, s)
+
+	// Use initial server first
+	indexingService.AddMapping(indexing.Range{
+		L: math.MinInt64,
+		R: math.MaxInt64,
+	}, s.Initial)
 }
 
 func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, error) {
@@ -156,6 +165,7 @@ func (s *Server) split() {
 	client.AddNodes(context.Background(), &db.AddNodesRequest{
 		Nodes: results,
 	})
+	// TODO: Update indexing server
 }
 
 func (s *Server) AddNodes(ctx context.Context, in *db.AddNodesRequest) (*db.AddNodesResponse, error) {
