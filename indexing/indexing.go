@@ -50,3 +50,10 @@ func (s *Service) Range(server string) (int64, int64) {
 	}
 	return 0, 0
 }
+
+func (s *Service) Print() {
+	fmt.Println("Mappings:")
+	for _, m := range s.Mappings {
+		fmt.Printf("%x-%x: %s\n", m.Left, m.Right, m.Address)
+	}
+}

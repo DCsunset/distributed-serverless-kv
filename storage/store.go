@@ -109,3 +109,10 @@ func (s *Store) RemoveNode(dataDigest []byte) {
 		}
 	}
 }
+
+func (s *Store) Print() {
+	fmt.Println("Nodes:")
+	for _, node := range s.Nodes {
+		fmt.Printf("%s: %s\n", node.Key, node.Value)
+	}
+}

@@ -97,6 +97,11 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.SplitRespo
 	indexingService.RemoveMapping(in.Left, in.Right)
 	indexingService.AddMapping(in.Left, in.Mid, in.LeftServer)
 	indexingService.AddMapping(in.Mid+1, in.Right, in.RightServer)
+
+	// Debug
+	indexingService.Print()
+	store.Print()
+
 	return &db.SplitResponse{}, nil
 }
 
