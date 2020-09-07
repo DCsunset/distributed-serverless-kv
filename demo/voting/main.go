@@ -34,7 +34,10 @@ func vote(ctx context.Context, client db.DbServiceClient, name string) {
 		Dep:   0,
 	}
 
-	client.Set(ctx, setRequest)
+	_, err = client.Set(ctx, setRequest)
+	if err != nil {
+		println(err)
+	}
 }
 
 type Argument struct {
