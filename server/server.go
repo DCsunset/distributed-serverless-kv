@@ -69,11 +69,16 @@ func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, e
 func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, error) {
 	address := indexingService.LocateKey(in.Key)
 
+	// Debug
+	indexingService.Print()
+	store.Print()
+
 	if address == s.Self {
 		loc := store.Set(in.SessionId, in.Key, in.Value, in.Dep)
 		if len(store.Nodes) > s.Threshold {
 			s.splitKeys()
 		}
+
 		return &db.SetResponse{Loc: loc}, nil
 	} else {
 		// Forward request to the correct server
