@@ -413,44 +413,6 @@ func (x *AddNodesRequest) GetNodes() []*Node {
 	return nil
 }
 
-type AddNodesResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *AddNodesResponse) Reset() {
-	*x = AddNodesResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_db_proto_msgTypes[6]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *AddNodesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AddNodesResponse) ProtoMessage() {}
-
-func (x *AddNodesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_db_proto_msgTypes[6]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AddNodesResponse.ProtoReflect.Descriptor instead.
-func (*AddNodesResponse) Descriptor() ([]byte, []int) {
-	return file_db_proto_rawDescGZIP(), []int{6}
-}
-
 type SplitRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -467,7 +429,7 @@ type SplitRequest struct {
 func (x *SplitRequest) Reset() {
 	*x = SplitRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_db_proto_msgTypes[7]
+		mi := &file_db_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -480,7 +442,7 @@ func (x *SplitRequest) String() string {
 func (*SplitRequest) ProtoMessage() {}
 
 func (x *SplitRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_db_proto_msgTypes[7]
+	mi := &file_db_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -493,7 +455,7 @@ func (x *SplitRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SplitRequest.ProtoReflect.Descriptor instead.
 func (*SplitRequest) Descriptor() ([]byte, []int) {
-	return file_db_proto_rawDescGZIP(), []int{7}
+	return file_db_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *SplitRequest) GetLeft() int64 {
@@ -531,14 +493,73 @@ func (x *SplitRequest) GetRightServer() string {
 	return ""
 }
 
-type SplitResponse struct {
+type SetMergeFunctionRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// Action name
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 }
 
-func (x *SplitResponse) Reset() {
-	*x = SplitResponse{}
+func (x *SetMergeFunctionRequest) Reset() {
+	*x = SetMergeFunctionRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_db_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetMergeFunctionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetMergeFunctionRequest) ProtoMessage() {}
+
+func (x *SetMergeFunctionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_db_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetMergeFunctionRequest.ProtoReflect.Descriptor instead.
+func (*SetMergeFunctionRequest) Descriptor() ([]byte, []int) {
+	return file_db_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SetMergeFunctionRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *SetMergeFunctionRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type SetGlobalMergeFunctionRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Action name
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+}
+
+func (x *SetGlobalMergeFunctionRequest) Reset() {
+	*x = SetGlobalMergeFunctionRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_db_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -546,13 +567,13 @@ func (x *SplitResponse) Reset() {
 	}
 }
 
-func (x *SplitResponse) String() string {
+func (x *SetGlobalMergeFunctionRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SplitResponse) ProtoMessage() {}
+func (*SetGlobalMergeFunctionRequest) ProtoMessage() {}
 
-func (x *SplitResponse) ProtoReflect() protoreflect.Message {
+func (x *SetGlobalMergeFunctionRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_db_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -564,9 +585,54 @@ func (x *SplitResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SplitResponse.ProtoReflect.Descriptor instead.
-func (*SplitResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use SetGlobalMergeFunctionRequest.ProtoReflect.Descriptor instead.
+func (*SetGlobalMergeFunctionRequest) Descriptor() ([]byte, []int) {
 	return file_db_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SetGlobalMergeFunctionRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type Empty struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Empty) Reset() {
+	*x = Empty{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_db_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Empty) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Empty) ProtoMessage() {}
+
+func (x *Empty) ProtoReflect() protoreflect.Message {
+	mi := &file_db_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
+	return file_db_proto_rawDescGZIP(), []int{9}
 }
 
 var File_db_proto protoreflect.FileDescriptor
@@ -605,31 +671,44 @@ var file_db_proto_rawDesc = []byte{
 	0x31, 0x0a, 0x0f, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x12, 0x1e, 0x0a, 0x05, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
 	0x0b, 0x32, 0x08, 0x2e, 0x64, 0x62, 0x2e, 0x4e, 0x6f, 0x64, 0x65, 0x52, 0x05, 0x4e, 0x6f, 0x64,
-	0x65, 0x73, 0x22, 0x12, 0x0a, 0x10, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x8c, 0x01, 0x0a, 0x0c, 0x53, 0x70, 0x6c, 0x69, 0x74,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x4c, 0x65, 0x66, 0x74, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x04, 0x4c, 0x65, 0x66, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x52,
-	0x69, 0x67, 0x68, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x52, 0x69, 0x67, 0x68,
-	0x74, 0x12, 0x10, 0x0a, 0x03, 0x4d, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03,
-	0x4d, 0x69, 0x64, 0x12, 0x1e, 0x0a, 0x0a, 0x4c, 0x65, 0x66, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65,
-	0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x4c, 0x65, 0x66, 0x74, 0x53, 0x65, 0x72,
-	0x76, 0x65, 0x72, 0x12, 0x20, 0x0a, 0x0b, 0x52, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x72, 0x76,
-	0x65, 0x72, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x52, 0x69, 0x67, 0x68, 0x74, 0x53,
-	0x65, 0x72, 0x76, 0x65, 0x72, 0x22, 0x0f, 0x0a, 0x0d, 0x53, 0x70, 0x6c, 0x69, 0x74, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xc8, 0x01, 0x0a, 0x09, 0x44, 0x62, 0x53, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x12, 0x28, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x0e, 0x2e, 0x64, 0x62,
-	0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x64, 0x62,
-	0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x28,
-	0x0a, 0x03, 0x53, 0x65, 0x74, 0x12, 0x0e, 0x2e, 0x64, 0x62, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x64, 0x62, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x37, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x4e,
-	0x6f, 0x64, 0x65, 0x73, 0x12, 0x13, 0x2e, 0x64, 0x62, 0x2e, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64,
-	0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x14, 0x2e, 0x64, 0x62, 0x2e, 0x41,
-	0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x00, 0x12, 0x2e, 0x0a, 0x05, 0x53, 0x70, 0x6c, 0x69, 0x74, 0x12, 0x10, 0x2e, 0x64, 0x62, 0x2e,
-	0x53, 0x70, 0x6c, 0x69, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x11, 0x2e, 0x64,
-	0x62, 0x2e, 0x53, 0x70, 0x6c, 0x69, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x00, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x73, 0x22, 0x8c, 0x01, 0x0a, 0x0c, 0x53, 0x70, 0x6c, 0x69, 0x74, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x4c, 0x65, 0x66, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x04, 0x4c, 0x65, 0x66, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x52, 0x69, 0x67, 0x68, 0x74,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x52, 0x69, 0x67, 0x68, 0x74, 0x12, 0x10, 0x0a,
+	0x03, 0x4d, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03, 0x4d, 0x69, 0x64, 0x12,
+	0x1e, 0x0a, 0x0a, 0x4c, 0x65, 0x66, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0a, 0x4c, 0x65, 0x66, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x12,
+	0x20, 0x0a, 0x0b, 0x52, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x52, 0x69, 0x67, 0x68, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x22, 0x3f, 0x0a, 0x17, 0x53, 0x65, 0x74, 0x4d, 0x65, 0x72, 0x67, 0x65, 0x46, 0x75, 0x6e,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03,
+	0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x12,
+	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
+	0x6d, 0x65, 0x22, 0x33, 0x0a, 0x1d, 0x53, 0x65, 0x74, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x4d,
+	0x65, 0x72, 0x67, 0x65, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79,
+	0x32, 0xbd, 0x02, 0x0a, 0x09, 0x44, 0x62, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x28,
+	0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x0e, 0x2e, 0x64, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0f, 0x2e, 0x64, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x28, 0x0a, 0x03, 0x53, 0x65, 0x74, 0x12,
+	0x0e, 0x2e, 0x64, 0x62, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x0f, 0x2e, 0x64, 0x62, 0x2e, 0x53, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0x00, 0x12, 0x2c, 0x0a, 0x08, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x12, 0x13,
+	0x2e, 0x64, 0x62, 0x2e, 0x41, 0x64, 0x64, 0x4e, 0x6f, 0x64, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x09, 0x2e, 0x64, 0x62, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00,
+	0x12, 0x26, 0x0a, 0x05, 0x53, 0x70, 0x6c, 0x69, 0x74, 0x12, 0x10, 0x2e, 0x64, 0x62, 0x2e, 0x53,
+	0x70, 0x6c, 0x69, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x09, 0x2e, 0x64, 0x62,
+	0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x12, 0x3c, 0x0a, 0x10, 0x53, 0x65, 0x74, 0x4d,
+	0x65, 0x72, 0x67, 0x65, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1b, 0x2e, 0x64,
+	0x62, 0x2e, 0x53, 0x65, 0x74, 0x4d, 0x65, 0x72, 0x67, 0x65, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x09, 0x2e, 0x64, 0x62, 0x2e, 0x45,
+	0x6d, 0x70, 0x74, 0x79, 0x22, 0x00, 0x12, 0x48, 0x0a, 0x16, 0x53, 0x65, 0x74, 0x47, 0x6c, 0x6f,
+	0x62, 0x61, 0x6c, 0x4d, 0x65, 0x72, 0x67, 0x65, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e,
+	0x12, 0x21, 0x2e, 0x64, 0x62, 0x2e, 0x53, 0x65, 0x74, 0x47, 0x6c, 0x6f, 0x62, 0x61, 0x6c, 0x4d,
+	0x65, 0x72, 0x67, 0x65, 0x46, 0x75, 0x6e, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x09, 0x2e, 0x64, 0x62, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x00,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -644,30 +723,35 @@ func file_db_proto_rawDescGZIP() []byte {
 	return file_db_proto_rawDescData
 }
 
-var file_db_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_db_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_db_proto_goTypes = []interface{}{
-	(*GetRequest)(nil),       // 0: db.GetRequest
-	(*GetResponse)(nil),      // 1: db.GetResponse
-	(*SetRequest)(nil),       // 2: db.SetRequest
-	(*SetResponse)(nil),      // 3: db.SetResponse
-	(*Node)(nil),             // 4: db.Node
-	(*AddNodesRequest)(nil),  // 5: db.AddNodesRequest
-	(*AddNodesResponse)(nil), // 6: db.AddNodesResponse
-	(*SplitRequest)(nil),     // 7: db.SplitRequest
-	(*SplitResponse)(nil),    // 8: db.SplitResponse
+	(*GetRequest)(nil),                    // 0: db.GetRequest
+	(*GetResponse)(nil),                   // 1: db.GetResponse
+	(*SetRequest)(nil),                    // 2: db.SetRequest
+	(*SetResponse)(nil),                   // 3: db.SetResponse
+	(*Node)(nil),                          // 4: db.Node
+	(*AddNodesRequest)(nil),               // 5: db.AddNodesRequest
+	(*SplitRequest)(nil),                  // 6: db.SplitRequest
+	(*SetMergeFunctionRequest)(nil),       // 7: db.SetMergeFunctionRequest
+	(*SetGlobalMergeFunctionRequest)(nil), // 8: db.SetGlobalMergeFunctionRequest
+	(*Empty)(nil),                         // 9: db.Empty
 }
 var file_db_proto_depIdxs = []int32{
 	4, // 0: db.AddNodesRequest.Nodes:type_name -> db.Node
 	0, // 1: db.DbService.Get:input_type -> db.GetRequest
 	2, // 2: db.DbService.Set:input_type -> db.SetRequest
 	5, // 3: db.DbService.AddNodes:input_type -> db.AddNodesRequest
-	7, // 4: db.DbService.Split:input_type -> db.SplitRequest
-	1, // 5: db.DbService.Get:output_type -> db.GetResponse
-	3, // 6: db.DbService.Set:output_type -> db.SetResponse
-	6, // 7: db.DbService.AddNodes:output_type -> db.AddNodesResponse
-	8, // 8: db.DbService.Split:output_type -> db.SplitResponse
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
+	6, // 4: db.DbService.Split:input_type -> db.SplitRequest
+	7, // 5: db.DbService.SetMergeFunction:input_type -> db.SetMergeFunctionRequest
+	8, // 6: db.DbService.SetGlobalMergeFunction:input_type -> db.SetGlobalMergeFunctionRequest
+	1, // 7: db.DbService.Get:output_type -> db.GetResponse
+	3, // 8: db.DbService.Set:output_type -> db.SetResponse
+	9, // 9: db.DbService.AddNodes:output_type -> db.Empty
+	9, // 10: db.DbService.Split:output_type -> db.Empty
+	9, // 11: db.DbService.SetMergeFunction:output_type -> db.Empty
+	9, // 12: db.DbService.SetGlobalMergeFunction:output_type -> db.Empty
+	7, // [7:13] is the sub-list for method output_type
+	1, // [1:7] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -752,18 +836,6 @@ func file_db_proto_init() {
 			}
 		}
 		file_db_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddNodesResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_db_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SplitRequest); i {
 			case 0:
 				return &v.state
@@ -775,8 +847,32 @@ func file_db_proto_init() {
 				return nil
 			}
 		}
+		file_db_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetMergeFunctionRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 		file_db_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SplitResponse); i {
+			switch v := v.(*SetGlobalMergeFunctionRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_db_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Empty); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -794,7 +890,7 @@ func file_db_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_db_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -822,8 +918,10 @@ const _ = grpc.SupportPackageIsVersion6
 type DbServiceClient interface {
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error)
-	AddNodes(ctx context.Context, in *AddNodesRequest, opts ...grpc.CallOption) (*AddNodesResponse, error)
-	Split(ctx context.Context, in *SplitRequest, opts ...grpc.CallOption) (*SplitResponse, error)
+	AddNodes(ctx context.Context, in *AddNodesRequest, opts ...grpc.CallOption) (*Empty, error)
+	Split(ctx context.Context, in *SplitRequest, opts ...grpc.CallOption) (*Empty, error)
+	SetMergeFunction(ctx context.Context, in *SetMergeFunctionRequest, opts ...grpc.CallOption) (*Empty, error)
+	SetGlobalMergeFunction(ctx context.Context, in *SetGlobalMergeFunctionRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type dbServiceClient struct {
@@ -852,8 +950,8 @@ func (c *dbServiceClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.
 	return out, nil
 }
 
-func (c *dbServiceClient) AddNodes(ctx context.Context, in *AddNodesRequest, opts ...grpc.CallOption) (*AddNodesResponse, error) {
-	out := new(AddNodesResponse)
+func (c *dbServiceClient) AddNodes(ctx context.Context, in *AddNodesRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/db.DbService/AddNodes", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -861,9 +959,27 @@ func (c *dbServiceClient) AddNodes(ctx context.Context, in *AddNodesRequest, opt
 	return out, nil
 }
 
-func (c *dbServiceClient) Split(ctx context.Context, in *SplitRequest, opts ...grpc.CallOption) (*SplitResponse, error) {
-	out := new(SplitResponse)
+func (c *dbServiceClient) Split(ctx context.Context, in *SplitRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/db.DbService/Split", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dbServiceClient) SetMergeFunction(ctx context.Context, in *SetMergeFunctionRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/db.DbService/SetMergeFunction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dbServiceClient) SetGlobalMergeFunction(ctx context.Context, in *SetGlobalMergeFunctionRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/db.DbService/SetGlobalMergeFunction", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -874,8 +990,10 @@ func (c *dbServiceClient) Split(ctx context.Context, in *SplitRequest, opts ...g
 type DbServiceServer interface {
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Set(context.Context, *SetRequest) (*SetResponse, error)
-	AddNodes(context.Context, *AddNodesRequest) (*AddNodesResponse, error)
-	Split(context.Context, *SplitRequest) (*SplitResponse, error)
+	AddNodes(context.Context, *AddNodesRequest) (*Empty, error)
+	Split(context.Context, *SplitRequest) (*Empty, error)
+	SetMergeFunction(context.Context, *SetMergeFunctionRequest) (*Empty, error)
+	SetGlobalMergeFunction(context.Context, *SetGlobalMergeFunctionRequest) (*Empty, error)
 }
 
 // UnimplementedDbServiceServer can be embedded to have forward compatible implementations.
@@ -888,11 +1006,17 @@ func (*UnimplementedDbServiceServer) Get(context.Context, *GetRequest) (*GetResp
 func (*UnimplementedDbServiceServer) Set(context.Context, *SetRequest) (*SetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
 }
-func (*UnimplementedDbServiceServer) AddNodes(context.Context, *AddNodesRequest) (*AddNodesResponse, error) {
+func (*UnimplementedDbServiceServer) AddNodes(context.Context, *AddNodesRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddNodes not implemented")
 }
-func (*UnimplementedDbServiceServer) Split(context.Context, *SplitRequest) (*SplitResponse, error) {
+func (*UnimplementedDbServiceServer) Split(context.Context, *SplitRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Split not implemented")
+}
+func (*UnimplementedDbServiceServer) SetMergeFunction(context.Context, *SetMergeFunctionRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetMergeFunction not implemented")
+}
+func (*UnimplementedDbServiceServer) SetGlobalMergeFunction(context.Context, *SetGlobalMergeFunctionRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetGlobalMergeFunction not implemented")
 }
 
 func RegisterDbServiceServer(s *grpc.Server, srv DbServiceServer) {
@@ -971,6 +1095,42 @@ func _DbService_Split_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DbService_SetMergeFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetMergeFunctionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DbServiceServer).SetMergeFunction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/db.DbService/SetMergeFunction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DbServiceServer).SetMergeFunction(ctx, req.(*SetMergeFunctionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DbService_SetGlobalMergeFunction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetGlobalMergeFunctionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DbServiceServer).SetGlobalMergeFunction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/db.DbService/SetGlobalMergeFunction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DbServiceServer).SetGlobalMergeFunction(ctx, req.(*SetGlobalMergeFunctionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _DbService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "db.DbService",
 	HandlerType: (*DbServiceServer)(nil),
@@ -990,6 +1150,14 @@ var _DbService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Split",
 			Handler:    _DbService_Split_Handler,
+		},
+		{
+			MethodName: "SetMergeFunction",
+			Handler:    _DbService_SetMergeFunction_Handler,
+		},
+		{
+			MethodName: "SetGlobalMergeFunction",
+			Handler:    _DbService_SetGlobalMergeFunction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

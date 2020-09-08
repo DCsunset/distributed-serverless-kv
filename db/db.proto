@@ -41,9 +41,6 @@ message AddNodesRequest {
     repeated Node Nodes = 1;
 }
 
-message AddNodesResponse {
-}
-
 message SplitRequest {
     // [L, Mid], [Mid + 1, R]
     int64 Left = 1;
@@ -53,12 +50,25 @@ message SplitRequest {
     string RightServer = 5;
 }
 
-message SplitResponse {
+message SetMergeFunctionRequest {
+    string key = 1;
+    // Action name
+    string name = 2;
+}
+
+message SetGlobalMergeFunctionRequest {
+    // Action name
+    string name = 1;
+}
+
+message Empty {
 }
 
 service DbService {
     rpc Get(GetRequest) returns (GetResponse) {}
     rpc Set(SetRequest) returns (SetResponse) {}
-    rpc AddNodes(AddNodesRequest) returns (AddNodesResponse) {}
-    rpc Split(SplitRequest) returns (SplitResponse) {}
+    rpc AddNodes(AddNodesRequest) returns (Empty) {}
+    rpc Split(SplitRequest) returns (Empty) {}
+    rpc SetMergeFunction(SetMergeFunctionRequest) returns (Empty) {}
+    rpc SetGlobalMergeFunction(SetGlobalMergeFunctionRequest) returns (Empty) {}
 }

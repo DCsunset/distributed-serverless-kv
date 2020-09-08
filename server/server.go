@@ -24,6 +24,9 @@ type Server struct {
 	Initial string `json:"initial"`
 	// Split threshold
 	Threshold int `json:"threshold"`
+
+	mergeFunction       map[string]string
+	globalMergeFunction string
 }
 
 var store = storage.Store{}
@@ -31,6 +34,8 @@ var indexingService = indexing.Service{}
 
 func (s *Server) Init() {
 	store.Init()
+	s.globalMergeFunction = ""
+	s.mergeFunction = make(map[string]string)
 
 	// Server configuration
 	data, err := ioutil.ReadFile("./server.json")
@@ -98,7 +103,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 }
 
 // [l, m] [m+1, r]
-func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.SplitResponse, error) {
+func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.Empty, error) {
 	indexingService.RemoveMapping(in.Left, in.Right)
 	indexingService.AddMapping(in.Left, in.Mid, in.LeftServer)
 	indexingService.AddMapping(in.Mid+1, in.Right, in.RightServer)
@@ -117,7 +122,7 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.SplitRespo
 	indexingService.Print()
 	store.Print()
 
-	return &db.SplitResponse{}, nil
+	return &db.Empty{}, nil
 }
 
 // Split based on key range
@@ -199,14 +204,26 @@ func (s *Server) splitKeys() {
 	}
 	defer conn.Close()
 	client := db.NewDbServiceClient(conn)
+	ctx := context.Background()
 
-	client.AddNodes(context.Background(), &db.AddNodesRequest{
+	client.AddNodes(ctx, &db.AddNodesRequest{
 		Nodes: results,
 	})
 
+	// Transfer merge function
+	for _, node := range results {
+		f, ok := s.mergeFunction[node.Key]
+		if ok {
+			delete(s.mergeFunction, node.Key)
+			client.SetMergeFunction(ctx, &db.SetMergeFunctionRequest{
+				Key:  node.Key,
+				Name: f,
+			})
+		}
+	}
+
 	// Update indexing server
 	left, right := indexingService.Range(s.Self)
-	ctx := context.Background()
 	request := &db.SplitRequest{
 		Left:        left,
 		Right:       right,
@@ -236,7 +253,35 @@ func (s *Server) splitKeys() {
 	}
 }
 
-func (s *Server) AddNodes(ctx context.Context, in *db.AddNodesRequest) (*db.AddNodesResponse, error) {
+func (s *Server) AddNodes(ctx context.Context, in *db.AddNodesRequest) (*db.Empty, error) {
 	store.AddNodes(in.Nodes)
-	return &db.AddNodesResponse{}, nil
+	return &db.Empty{}, nil
+}
+
+func (self *Server) SetMergeFunction(ctx context.Context, in *db.SetMergeFunctionRequest) (*db.Empty, error) {
+	if len(in.Name) == 0 {
+		delete(self.mergeFunction, in.Key)
+	} else {
+		self.mergeFunction[in.Key] = in.Name
+	}
+	return &db.Empty{}, nil
+}
+
+func (self *Server) SetGlobalMergeFunction(ctx context.Context, in *db.SetGlobalMergeFunctionRequest) (*db.Empty, error) {
+	for _, addr := range self.Servers {
+		if addr == self.Self {
+			self.globalMergeFunction = in.Name
+		} else {
+			// Forward request to all servers
+			conn, err := grpc.Dial(addr, grpc.WithInsecure())
+			if err != nil {
+				log.Fatalln(err)
+			}
+			defer conn.Close()
+			client := db.NewDbServiceClient(conn)
+
+			client.SetGlobalMergeFunction(ctx, in)
+		}
+	}
+	return &db.Empty{}, nil
 }
