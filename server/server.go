@@ -103,6 +103,16 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.SplitRespo
 	indexingService.AddMapping(in.Left, in.Mid, in.LeftServer)
 	indexingService.AddMapping(in.Mid+1, in.Right, in.RightServer)
 
+	// Remove from available servers
+	for i, server := range s.AvailableServers {
+		if server == in.LeftServer || server == in.RightServer {
+			l := len(s.AvailableServers)
+			s.AvailableServers[i] = s.AvailableServers[l-1]
+			s.AvailableServers = s.AvailableServers[:l-1]
+			break
+		}
+	}
+
 	// Debug
 	indexingService.Print()
 	store.Print()
