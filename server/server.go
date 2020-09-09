@@ -53,6 +53,25 @@ func (s *Server) Init() {
 	)
 }
 
+func (self *Server) AddChild(ctx context.Context, in *db.AddChildRequest) (*db.Empty, error) {
+	address := indexingService.Locate(utils.KeyHash(in.Location))
+
+	if address == self.Self {
+		store.AddChild(in.Location, in.Child)
+		return &db.Empty{}, nil
+	} else {
+		// Forward request to the correct server
+		conn, err := grpc.Dial(address, grpc.WithInsecure())
+		if err != nil {
+			return &db.Empty{}, err
+		}
+		defer conn.Close()
+		client := db.NewDbServiceClient(conn)
+
+		return client.AddChild(ctx, in)
+	}
+}
+
 func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, error) {
 	address := indexingService.LocateKey(in.Key)
 

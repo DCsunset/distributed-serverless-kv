@@ -31,15 +31,18 @@ func (s *Service) RemoveMapping(left, right uint32) {
 	}
 }
 
-func (s *Service) LocateKey(key string) string {
-	keyHash := utils.Hash2Uint(utils.Hash([]byte(key)))
-
-	for _, m := range s.Mappings {
+func (self *Service) Locate(keyHash uint32) string {
+	for _, m := range self.Mappings {
 		if keyHash >= m.Left && keyHash <= m.Right {
 			return m.Address
 		}
 	}
-	panic(fmt.Sprintf("Key %s not found", key))
+	panic(fmt.Sprintf("Key hash %x not found", keyHash))
+}
+
+func (s *Service) LocateKey(key string) string {
+	keyHash := utils.Hash2Uint(utils.Hash([]byte(key)))
+	return s.Locate(keyHash)
 }
 
 func (s *Service) Range(server string) (uint32, uint32) {

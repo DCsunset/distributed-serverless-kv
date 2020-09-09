@@ -73,6 +73,11 @@ type Data struct {
 	Dep   int64
 }
 
+func (self *Store) AddChild(location uint64, child uint64) {
+	node := self.getNode(location)
+	node.Children = append(node.Children, child)
+}
+
 func (s *Store) Set(key string, value string, dep uint64) uint64 {
 	// Use random number + key hash
 	loc := uint64(rand.Uint32()) + (uint64(utils.Hash2Uint(utils.Hash([]byte(key)))) << 32)

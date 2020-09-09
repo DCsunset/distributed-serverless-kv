@@ -43,6 +43,7 @@ message SplitRequest {
     string RightServer = 5;
 }
 
+// TODO: set merge function for location
 message SetMergeFunctionRequest {
     string key = 1;
     // Action name
