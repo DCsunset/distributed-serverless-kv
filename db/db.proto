@@ -2,39 +2,32 @@ syntax = "proto3";
 package db;
 
 message GetRequest {
-    int64 SessionId = 1;
     // Empty to get key at location
-    string Key = 2;
-    int64 Loc = 3;
-    int64 VirtualLoc = 4;
+    string Key = 1;
+    uint64 Location = 2;
 }
 message GetResponse {
     string Value = 1;
 }
 
 message SetRequest {
-    int64 SessionId = 1;
-    string Key = 2;
-    string Value = 3;
-    // Its virtual location (must >= 0 if used, < 0 means not used)
-    int64 VirtualLoc = 4;
+    string Key = 1;
+    string Value = 2;
     // Dependent location
-    int64 Dep = 5;
-    // Dependent virtual location (must >= 0 if used, < 0 means not used)
-    int64 VirtualDep = 6;
+    uint64 Dep = 3;
 }
 message SetResponse {
     // Location of the changes
-    int64 Loc = 1;
+    uint64 Location = 1;
 }
 
 message Node {
     // Parent location
-    int64 Dep = 1;
-    string Key = 2;
-    int64 KeyHash = 3;
+    uint64 Location = 1;
+    uint64 Dep = 2;
+    string Key = 3;
     string Value = 4;
-    bytes Digest = 5;
+    repeated uint64 Children = 5;
 }
 
 message AddNodesRequest {
@@ -43,9 +36,9 @@ message AddNodesRequest {
 
 message SplitRequest {
     // [L, Mid], [Mid + 1, R]
-    int64 Left = 1;
-    int64 Right = 2;
-    int64 Mid = 3;
+    uint32 Left = 1;
+    uint32 Right = 2;
+    uint32 Mid = 3;
     string LeftServer = 4;
     string RightServer = 5;
 }
@@ -62,8 +55,8 @@ message SetGlobalMergeFunctionRequest {
 }
 
 message AddChildRequest {
-    int64 Location = 1;
-    int64 Child = 2;
+    uint64 Location = 1;
+    uint64 Child = 2;
 }
 
 message Empty {}
