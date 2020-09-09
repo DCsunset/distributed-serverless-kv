@@ -83,7 +83,6 @@ func (s *Store) Set(key string, value string, dep uint64) uint64 {
 	loc := uint64(rand.Uint32()) + (uint64(utils.Hash2Uint(utils.Hash([]byte(key)))) << 32)
 	s.newNode(loc, dep, key, value)
 
-	// TODO: Append to parent's child list
 	return loc
 }
 

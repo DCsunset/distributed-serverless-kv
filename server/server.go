@@ -100,6 +100,12 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 
 	if address == s.Self {
 		loc := store.Set(in.Key, in.Value, in.Dep)
+		// Add child
+		s.AddChild(ctx, &db.AddChildRequest{
+			Location: in.Dep,
+			Child:    loc,
+		})
+
 		if len(store.Nodes) > s.Threshold {
 			s.splitKeys()
 		}
