@@ -26,7 +26,7 @@ type Server struct {
 	// Split threshold
 	Threshold int `json:"threshold"`
 
-	mergeFunction       map[string]string
+	mergeFunction       map[uint64]string
 	globalMergeFunction string
 }
 
@@ -36,7 +36,7 @@ var indexingService = indexing.Service{}
 func (s *Server) Init() {
 	store.Init()
 	s.globalMergeFunction = ""
-	s.mergeFunction = make(map[string]string)
+	s.mergeFunction = make(map[uint64]string)
 
 	// Server configuration
 	data, err := ioutil.ReadFile("./server.json")
@@ -232,12 +232,12 @@ func (s *Server) splitKeys() {
 
 	// Transfer merge function
 	for _, node := range results {
-		f, ok := s.mergeFunction[node.Key]
+		f, ok := s.mergeFunction[node.Location]
 		if ok {
-			delete(s.mergeFunction, node.Key)
+			delete(s.mergeFunction, node.Location)
 			client.SetMergeFunction(ctx, &db.SetMergeFunctionRequest{
-				Key:  node.Key,
-				Name: f,
+				Location: node.Location,
+				Name:     f,
 			})
 		}
 	}
@@ -280,9 +280,9 @@ func (s *Server) AddNodes(ctx context.Context, in *db.AddNodesRequest) (*db.Empt
 
 func (self *Server) SetMergeFunction(ctx context.Context, in *db.SetMergeFunctionRequest) (*db.Empty, error) {
 	if len(in.Name) == 0 {
-		delete(self.mergeFunction, in.Key)
+		delete(self.mergeFunction, in.Location)
 	} else {
-		self.mergeFunction[in.Key] = in.Name
+		self.mergeFunction[in.Location] = in.Name
 	}
 	return &db.Empty{}, nil
 }
