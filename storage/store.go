@@ -52,7 +52,7 @@ func (s *Store) newNode(location uint64, dep uint64, key string, value string) {
 
 func (s *Store) Get(key string, loc uint64) (string, error) {
 	var node *Node
-	node = s.getNode(loc)
+	node = s.GetNode(loc)
 
 	// Find till root
 	for {
@@ -62,7 +62,7 @@ func (s *Store) Get(key string, loc uint64) (string, error) {
 		if node.Dep == math.MaxUint64 {
 			break
 		}
-		node = s.getNode(node.Dep)
+		node = s.GetNode(node.Dep)
 	}
 	return "", fmt.Errorf("Key %s not found", key)
 }
@@ -74,7 +74,7 @@ type Data struct {
 }
 
 func (self *Store) AddChild(location uint64, child uint64) {
-	node := self.getNode(location)
+	node := self.GetNode(location)
 	node.Children = append(node.Children, child)
 }
 
@@ -86,7 +86,7 @@ func (s *Store) Set(key string, value string, dep uint64) uint64 {
 	return loc
 }
 
-func (s *Store) getNode(loc uint64) *Node {
+func (s *Store) GetNode(loc uint64) *Node {
 	memLoc, ok := s.MemLocation[loc]
 	if !ok {
 		return nil

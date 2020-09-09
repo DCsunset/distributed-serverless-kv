@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math"
@@ -310,4 +311,19 @@ func (self *Server) SetGlobalMergeFunction(ctx context.Context, in *db.SetGlobal
 		}
 	}
 	return &db.Empty{}, nil
+}
+
+func (self *Server) GetNode(ctx context.Context, in *db.GetNodeRequest) (*db.Node, error) {
+	node := store.GetNode(in.Location)
+	if node == nil {
+		return &db.Node{}, fmt.Errorf("Location %x not found", in.Location)
+	}
+
+	return &db.Node{
+		Location: node.Location,
+		Dep:      node.Dep,
+		Key:      node.Key,
+		Value:    node.Value,
+		Children: node.Children,
+	}, nil
 }
