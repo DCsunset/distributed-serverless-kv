@@ -1,61 +1,56 @@
 package storage
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
+	"math"
+	"math/rand"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
 	"github.com/DCsunset/openwhisk-grpc/utils"
 )
 
 type Node struct {
-	Dep     int64
-	Key     string
-	KeyHash int64 // The hash of the key
-	Value   string
-	Digest  []byte // Use digest for comparation and location
+	Location uint64 // The location of the key
+	Dep      uint64
+	Key      string
+	Children []uint64
+	Value    string
 }
 
 type Store struct {
 	Nodes []Node // all nodes
 	// Map hash locations to memory locations
-	MemLocation map[int64]int64
+	MemLocation map[uint64]int
 }
 
 func (s *Store) Init() {
 	if len(s.Nodes) == 0 {
 		// Create a root and map first
-		s.MemLocation = make(map[int64]int64)
+		s.MemLocation = make(map[uint64]int)
 		root := Node{
-			Dep:    -1,
-			Digest: nil,
+			Dep:      math.MaxUint64,
+			Location: 0,
 		}
 		s.Nodes = append(s.Nodes, root)
 		s.MemLocation[0] = 0
 	}
 }
 
-func (s *Store) newNode(dep int64, key string, value string, digest []byte) int64 {
-	// Use hash location
-	loc := utils.Hash2int(digest)
-
+func (s *Store) newNode(location uint64, dep uint64, key string, value string) {
 	node := Node{
-		Dep:     dep,
-		Key:     key,
-		KeyHash: utils.Hash2int(utils.Hash([]byte(key))),
-		Value:   value,
-		Digest:  digest,
+		Location: location,
+		Dep:      dep,
+		Key:      key,
+		Children: nil,
+		Value:    value,
 	}
 	s.Nodes = append(s.Nodes, node)
-	memLoc := int64(len(s.Nodes)) - 1
+	memLoc := len(s.Nodes) - 1
 
-	s.MemLocation[loc] = memLoc
-
-	return loc
+	s.MemLocation[location] = memLoc
 }
 
-func (s *Store) Get(id int64, key string, loc int64) (string, error) {
+func (s *Store) Get(key string, loc uint64) (string, error) {
 	var node *Node
 	node = s.getNode(loc)
 
@@ -64,7 +59,7 @@ func (s *Store) Get(id int64, key string, loc int64) (string, error) {
 		if node.Key == key {
 			return node.Value, nil
 		}
-		if node.Dep == -1 {
+		if node.Dep == math.MaxUint64 {
 			break
 		}
 		node = s.getNode(node.Dep)
@@ -78,16 +73,16 @@ type Data struct {
 	Dep   int64
 }
 
-func (s *Store) Set(id int64, key string, value string, dep int64) int64 {
-	// Compute hash
-	dataBytes, _ := json.Marshal(Data{Key: key, Value: value, Dep: dep})
-	digest := utils.Hash(dataBytes)
+func (s *Store) Set(key string, value string, dep uint64) uint64 {
+	// Use random number + key hash
+	loc := uint64(rand.Uint32()) + (uint64(utils.Hash2Uint(utils.Hash([]byte(key)))) << 32)
+	s.newNode(loc, dep, key, value)
 
-	newLoc := s.newNode(dep, key, value, digest)
-	return newLoc
+	// TODO: Append to parent's child list
+	return loc
 }
 
-func (s *Store) getNode(loc int64) *Node {
+func (s *Store) getNode(loc uint64) *Node {
 	memLoc, ok := s.MemLocation[loc]
 	if !ok {
 		return nil
@@ -97,13 +92,13 @@ func (s *Store) getNode(loc int64) *Node {
 
 func (s *Store) AddNodes(nodes []*db.Node) {
 	for _, node := range nodes {
-		s.newNode(node.Dep, node.Key, node.Value, node.Digest)
+		s.newNode(node.Location, node.Dep, node.Key, node.Value)
 	}
 }
 
-func (s *Store) RemoveNode(dataDigest []byte) {
+func (s *Store) RemoveNode(location uint64) {
 	for i, node := range s.Nodes {
-		if bytes.Compare(node.Digest, dataDigest) == 0 {
+		if node.Location == location {
 			s.Nodes[i] = Node{}
 			return
 		}

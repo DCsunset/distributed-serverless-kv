@@ -12,6 +12,7 @@ import (
 	"github.com/DCsunset/openwhisk-grpc/db"
 	"github.com/DCsunset/openwhisk-grpc/indexing"
 	"github.com/DCsunset/openwhisk-grpc/storage"
+	"github.com/DCsunset/openwhisk-grpc/utils"
 	"google.golang.org/grpc"
 )
 
@@ -46,8 +47,8 @@ func (s *Server) Init() {
 
 	// Use initial server first
 	indexingService.AddMapping(
-		math.MinInt64,
-		math.MaxInt64,
+		0,
+		math.MaxUint32,
 		s.Initial,
 	)
 }
@@ -56,7 +57,7 @@ func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, e
 	address := indexingService.LocateKey(in.Key)
 
 	if address == s.Self {
-		value, err := store.Get(in.SessionId, in.Key, in.Loc)
+		value, err := store.Get(in.Key, in.Location)
 		return &db.GetResponse{Value: value}, err
 	} else {
 		// Forward request to the correct server
@@ -79,12 +80,12 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 	store.Print()
 
 	if address == s.Self {
-		loc := store.Set(in.SessionId, in.Key, in.Value, in.Dep)
+		loc := store.Set(in.Key, in.Value, in.Dep)
 		if len(store.Nodes) > s.Threshold {
 			s.splitKeys()
 		}
 
-		return &db.SetResponse{Loc: loc}, nil
+		return &db.SetResponse{Location: loc}, nil
 	} else {
 		// Forward request to the correct server
 		conn, err := grpc.Dial(address, grpc.WithInsecure())
@@ -131,12 +132,12 @@ func (s *Server) splitKeys() {
 		return
 	}
 
-	var keys []int64
+	var keys []uint32
 	for i, node := range store.Nodes {
 		if i == 0 {
 			continue
 		}
-		keys = append(keys, node.KeyHash)
+		keys = append(keys, utils.KeyHash(node.Location))
 	}
 	if len(keys) == 0 {
 		return
@@ -166,30 +167,30 @@ func (s *Server) splitKeys() {
 	var results []*db.Node
 	if greater >= less {
 		for _, node := range store.Nodes {
-			if node.KeyHash > mid {
+			if utils.KeyHash(node.Location) > mid {
 				results = append(results, &db.Node{
-					Dep:     node.Dep,
-					Digest:  node.Digest,
-					Key:     node.Key,
-					KeyHash: node.KeyHash,
-					Value:   node.Value,
+					Location: node.Location,
+					Dep:      node.Dep,
+					Key:      node.Key,
+					Value:    node.Value,
+					Children: node.Children,
 				})
-				store.RemoveNode(node.Digest)
+				store.RemoveNode(node.Location)
 			}
 		}
 		rightServer = server
 		leftServer = s.Self
 	} else {
 		for _, node := range store.Nodes {
-			if node.KeyHash < mid {
+			if utils.KeyHash(node.Location) < mid {
 				results = append(results, &db.Node{
-					Dep:     node.Dep,
-					Digest:  node.Digest,
-					Key:     node.Key,
-					KeyHash: node.KeyHash,
-					Value:   node.Value,
+					Location: node.Location,
+					Dep:      node.Dep,
+					Key:      node.Key,
+					Value:    node.Value,
+					Children: node.Children,
 				})
-				store.RemoveNode(node.Digest)
+				store.RemoveNode(node.Location)
 			}
 		}
 		mid -= 1

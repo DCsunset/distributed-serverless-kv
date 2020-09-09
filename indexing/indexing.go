@@ -7,8 +7,8 @@ import (
 )
 
 type Mapping struct {
-	Left    int64
-	Right   int64
+	Left    uint32
+	Right   uint32
 	Address string
 }
 
@@ -16,11 +16,11 @@ type Service struct {
 	Mappings []Mapping
 }
 
-func (s *Service) AddMapping(left, right int64, server string) {
+func (s *Service) AddMapping(left, right uint32, server string) {
 	s.Mappings = append(s.Mappings, Mapping{left, right, server})
 }
 
-func (s *Service) RemoveMapping(left, right int64) {
+func (s *Service) RemoveMapping(left, right uint32) {
 	for i, mapping := range s.Mappings {
 		if mapping.Left == left && mapping.Right == right {
 			l := len(s.Mappings)
@@ -32,7 +32,7 @@ func (s *Service) RemoveMapping(left, right int64) {
 }
 
 func (s *Service) LocateKey(key string) string {
-	keyHash := utils.Hash2int(utils.Hash([]byte(key)))
+	keyHash := utils.Hash2Uint(utils.Hash([]byte(key)))
 
 	for _, m := range s.Mappings {
 		if keyHash >= m.Left && keyHash <= m.Right {
@@ -42,7 +42,7 @@ func (s *Service) LocateKey(key string) string {
 	panic(fmt.Sprintf("Key %s not found", key))
 }
 
-func (s *Service) Range(server string) (int64, int64) {
+func (s *Service) Range(server string) (uint32, uint32) {
 	for _, mapping := range s.Mappings {
 		if mapping.Address == server {
 			return mapping.Left, mapping.Right
