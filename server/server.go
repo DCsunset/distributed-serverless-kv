@@ -141,12 +141,8 @@ func (self *Server) distributeNodes(nodes []*db.Node) {
 	}
 }
 
-func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, error) {
+func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResponse, err error) {
 	address := indexingService.LocateKey(in.Key)
-
-	// Debug
-	indexingService.Print()
-	store.Print()
 
 	if address == s.Self {
 		loc := store.Set(in.Key, in.Value, in.Dep)
@@ -183,6 +179,11 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 						Child:    child.Location,
 					})
 				}
+
+				// Debug
+				fmt.Println("[Merge]")
+				indexingService.Print()
+				store.Print()
 			}
 		}
 
@@ -190,7 +191,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 			s.splitKeys()
 		}
 
-		return &db.SetResponse{Location: loc}, nil
+		result = &db.SetResponse{Location: loc}
 	} else {
 		// Forward request to the correct server
 		conn, err := grpc.Dial(address, grpc.WithInsecure())
@@ -200,12 +201,17 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 		defer conn.Close()
 		client := db.NewDbServiceClient(conn)
 
-		resp, err := client.Set(ctx, in)
+		result, err = client.Set(ctx, in)
 		if len(store.Nodes) > s.Threshold {
 			s.splitKeys()
 		}
-		return resp, err
 	}
+
+	// Debug
+	fmt.Println("[Set]")
+	indexingService.Print()
+	store.Print()
+	return result, nil
 }
 
 // [l, m] [m+1, r]
@@ -225,6 +231,7 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.Empty, err
 	}
 
 	// Debug
+	fmt.Println("[Split]")
 	indexingService.Print()
 	store.Print()
 
