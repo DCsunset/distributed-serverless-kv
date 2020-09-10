@@ -42,9 +42,13 @@ func main() {
 	votesNum := 0
 	maxVotes := 0
 	for _, child := range parent.Children {
-		node, _ := client.GetNode(ctx, &db.GetNodeRequest{
+		node, err := client.GetNode(ctx, &db.GetNodeRequest{
 			Location: child,
 		})
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		if node.Key == "votes" {
 			votesNum += 1
 			if maxVotes < utils.Str2Int(node.Value) {
