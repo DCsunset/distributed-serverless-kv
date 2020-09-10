@@ -66,9 +66,8 @@ func main() {
 	ctx := context.Background()
 
 	// Set merge function
-	client.SetMergeFunction(ctx, &db.SetMergeFunctionRequest{
-		Location: 0,
-		Name:     "voting-merge",
+	client.SetGlobalMergeFunction(ctx, &db.SetGlobalMergeFunctionRequest{
+		Name: "voting-merge",
 	})
 
 	vote(ctx, client, args.Name)
