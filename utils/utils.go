@@ -50,7 +50,7 @@ const APIHOST = "aqua02:31001"
 const USER = "23bc46b1-71f6-4ed5-8c54-816aa4f8c502"
 const PASS = "123zO3xZCLrMN6v2BKK1dXYFpXlPkccOFqm12CdAsMgRU4VrNZ9lyGVCGuMDGIwP"
 
-func CallAction(params []byte, action string) []byte {
+func CallAction(action string, params []byte) []byte {
 	url := fmt.Sprintf("https://%s/api/v1/namespaces/guest/actions/%s?blocking=true&result=true", APIHOST, action)
 
 	client := &http.Client{}

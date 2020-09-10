@@ -59,6 +59,10 @@ message AddChildRequest {
     uint64 Child = 2;
 }
 
+message RemoveChildrenRequest {
+    uint64 Location = 1;
+}
+
 message GetNodeRequest {
     uint64 Location = 1;
 }
@@ -66,7 +70,8 @@ message GetNodeRequest {
 message Empty {}
 
 service DbService {
-    rpc AddChild(AddChildRequest) returns (Empty) {}
+    rpc RemoveChildren(RemoveChildrenRequest) returns (Empty) {}
+    rpc AddChild(AddChildRequest) returns (Node) {}
     rpc GetNode(GetNodeRequest) returns (Node) {}
     rpc Get(GetRequest) returns (GetResponse) {}
     rpc Set(SetRequest) returns (SetResponse) {}

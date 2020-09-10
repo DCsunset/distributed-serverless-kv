@@ -54,17 +54,43 @@ func (s *Server) Init() {
 	)
 }
 
-func (self *Server) AddChild(ctx context.Context, in *db.AddChildRequest) (*db.Empty, error) {
+func (self *Server) RemoveChildren(ctx context.Context, in *db.RemoveChildrenRequest) (*db.Empty, error) {
 	address := indexingService.Locate(utils.KeyHash(in.Location))
 
 	if address == self.Self {
-		store.AddChild(in.Location, in.Child)
+		node := store.GetNode(in.Location)
+		node.Children = nil
 		return &db.Empty{}, nil
 	} else {
 		// Forward request to the correct server
 		conn, err := grpc.Dial(address, grpc.WithInsecure())
 		if err != nil {
 			return &db.Empty{}, err
+		}
+		defer conn.Close()
+		client := db.NewDbServiceClient(conn)
+
+		return client.RemoveChildren(ctx, in)
+	}
+}
+
+func (self *Server) AddChild(ctx context.Context, in *db.AddChildRequest) (*db.Node, error) {
+	address := indexingService.Locate(utils.KeyHash(in.Location))
+
+	if address == self.Self {
+		node := store.AddChild(in.Location, in.Child)
+		return &db.Node{
+			Location: node.Location,
+			Dep:      node.Dep,
+			Key:      node.Key,
+			Value:    node.Value,
+			Children: node.Children,
+		}, nil
+	} else {
+		// Forward request to the correct server
+		conn, err := grpc.Dial(address, grpc.WithInsecure())
+		if err != nil {
+			return &db.Node{}, err
 		}
 		defer conn.Close()
 		client := db.NewDbServiceClient(conn)
@@ -92,6 +118,29 @@ func (s *Server) Get(ctx context.Context, in *db.GetRequest) (*db.GetResponse, e
 	}
 }
 
+func (self *Server) distributeNodes(nodes []*db.Node) {
+	nodeMapping := make(map[string][]*db.Node)
+
+	for _, node := range nodes {
+		server := indexingService.Locate(utils.KeyHash(node.Location))
+		nodeMapping[server] = append(nodeMapping[server], node)
+	}
+
+	ctx := context.Background()
+	for server, nodes := range nodeMapping {
+		// Forward request to the correct server
+		conn, err := grpc.Dial(server, grpc.WithInsecure())
+		if err != nil {
+			log.Fatalln(err)
+		}
+		defer conn.Close()
+		client := db.NewDbServiceClient(conn)
+		client.AddNodes(ctx, &db.AddNodesRequest{
+			Nodes: nodes,
+		})
+	}
+}
+
 func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, error) {
 	address := indexingService.LocateKey(in.Key)
 
@@ -102,10 +151,40 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (*db.SetResponse, e
 	if address == s.Self {
 		loc := store.Set(in.Key, in.Value, in.Dep)
 		// Add child
-		s.AddChild(ctx, &db.AddChildRequest{
+		parent, _ := s.AddChild(ctx, &db.AddChildRequest{
 			Location: in.Dep,
 			Child:    loc,
 		})
+
+		// Trigger function if there's conflict
+		if len(parent.Children) > 1 {
+			merge, ok := s.mergeFunction[in.Dep]
+			if !ok {
+				merge = s.globalMergeFunction
+			}
+			if len(merge) > 0 {
+				params, _ := json.Marshal(parent)
+				resp := utils.CallAction(merge, params)
+				var children []*db.Node
+				err := json.Unmarshal(resp, &children)
+				if err != nil {
+					return &db.SetResponse{Location: loc}, err
+				}
+
+				s.distributeNodes(children)
+
+				// Remove current children and use new children
+				s.RemoveChildren(ctx, &db.RemoveChildrenRequest{
+					Location: parent.Location,
+				})
+				for _, child := range children {
+					s.AddChild(ctx, &db.AddChildRequest{
+						Location: child.Dep,
+						Child:    child.Location,
+					})
+				}
+			}
+		}
 
 		if len(store.Nodes) > s.Threshold {
 			s.splitKeys()

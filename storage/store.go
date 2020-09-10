@@ -73,9 +73,10 @@ type Data struct {
 	Dep   int64
 }
 
-func (self *Store) AddChild(location uint64, child uint64) {
+func (self *Store) AddChild(location uint64, child uint64) *Node {
 	node := self.GetNode(location)
 	node.Children = append(node.Children, child)
+	return node
 }
 
 func (s *Store) Set(key string, value string, dep uint64) uint64 {
