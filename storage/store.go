@@ -87,6 +87,18 @@ func (s *Store) Set(key string, value string, dep uint64) uint64 {
 	return loc
 }
 
+func CreateNode(key, value string, dep uint64) *db.Node {
+	// Use random number + key hash
+	loc := uint64(rand.Uint32()) + (uint64(utils.Hash2Uint(utils.Hash([]byte(key)))) << 32)
+	return &db.Node{
+		Location: loc,
+		Dep:      dep,
+		Key:      key,
+		Value:    value,
+		Children: nil,
+	}
+}
+
 func (s *Store) GetNode(loc uint64) *Node {
 	memLoc, ok := s.MemLocation[loc]
 	if !ok {
