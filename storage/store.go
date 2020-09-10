@@ -116,7 +116,9 @@ func (s *Store) AddNodes(nodes []*db.Node) {
 func (s *Store) RemoveNode(location uint64) {
 	for i, node := range s.Nodes {
 		if node.Location == location {
-			s.Nodes[i] = Node{}
+			s.Nodes[i] = Node{
+				Key: "",
+			}
 			return
 		}
 	}
@@ -125,6 +127,8 @@ func (s *Store) RemoveNode(location uint64) {
 func (s *Store) Print() {
 	fmt.Println("Nodes:")
 	for _, node := range s.Nodes {
-		fmt.Printf("%s: %s (Dep: %x, Chilren: %s)\n", node.Key, node.Value, node.Dep, utils.ToString(node.Children))
+		if len(node.Key) > 0 {
+			fmt.Printf("%s: %s (Dep: %x, Chilren: %s)\n", node.Key, node.Value, node.Dep, utils.ToString(node.Children))
+		}
 	}
 }
