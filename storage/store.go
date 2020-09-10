@@ -12,8 +12,8 @@ import (
 type Node struct {
 	Location uint64 // The location of the key
 	Dep      uint64
-	Key      string
 	Children []uint64
+	Key      string
 	Value    string
 }
 
@@ -113,8 +113,6 @@ func (s *Store) RemoveNode(location uint64) {
 func (s *Store) Print() {
 	fmt.Println("Nodes:")
 	for _, node := range s.Nodes {
-		if node.Location != 0 {
-			fmt.Printf("%s: %s (Dep: %x, Chilren: %s)\n", node.Key, node.Value, node.Dep, utils.ToString(node.Children))
-		}
+		fmt.Printf("%s: %s (Dep: %x, Chilren: %s)\n", node.Key, node.Value, node.Dep, utils.ToString(node.Children))
 	}
 }
