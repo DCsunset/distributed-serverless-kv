@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func MakeRange(min, max int64) []int64 {
@@ -17,6 +18,11 @@ func MakeRange(min, max int64) []int64 {
 		a[i] = min + int64(i)
 	}
 	return a
+}
+
+func Str2Int(str string) int {
+	result, _ := strconv.Atoi(str)
+	return result
 }
 
 func Print(m interface{}) {
