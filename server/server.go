@@ -59,6 +59,9 @@ func (self *Server) RemoveChildren(ctx context.Context, in *db.RemoveChildrenReq
 
 	if address == self.Self {
 		node := store.GetNode(in.Location)
+		for _, child := range node.Children {
+			store.RemoveNode(child)
+		}
 		node.Children = nil
 		return &db.Empty{}, nil
 	} else {
