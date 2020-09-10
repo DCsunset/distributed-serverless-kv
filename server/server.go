@@ -372,6 +372,8 @@ func (s *Server) AddNodes(ctx context.Context, in *db.AddNodesRequest) (*db.Empt
 }
 
 func (self *Server) SetMergeFunction(ctx context.Context, in *db.SetMergeFunctionRequest) (*db.Empty, error) {
+	// FIXME: find the right server to add merge function
+
 	if len(in.Name) == 0 {
 		delete(self.mergeFunction, in.Location)
 	} else {
@@ -400,16 +402,30 @@ func (self *Server) SetGlobalMergeFunction(ctx context.Context, in *db.SetGlobal
 }
 
 func (self *Server) GetNode(ctx context.Context, in *db.GetNodeRequest) (*db.Node, error) {
-	node := store.GetNode(in.Location)
-	if node == nil {
-		return &db.Node{}, fmt.Errorf("Location %x not found", in.Location)
-	}
+	address := indexingService.LocateKey(in.Key)
 
-	return &db.Node{
-		Location: node.Location,
-		Dep:      node.Dep,
-		Key:      node.Key,
-		Value:    node.Value,
-		Children: node.Children,
-	}, nil
+	if address == self.Self {
+		node := store.GetNode(in.Location)
+		if node == nil {
+			return &db.Node{}, fmt.Errorf("Location %x not found", in.Location)
+		}
+
+		return &db.Node{
+			Location: node.Location,
+			Dep:      node.Dep,
+			Key:      node.Key,
+			Value:    node.Value,
+			Children: node.Children,
+		}, nil
+	} else {
+		// Forward request to the correct server
+		conn, err := grpc.Dial(address, grpc.WithInsecure())
+		if err != nil {
+			return &db.Node{}, err
+		}
+		defer conn.Close()
+		client := db.NewDbServiceClient(conn)
+
+		return client.GetNode(ctx, in)
+	}
 }
