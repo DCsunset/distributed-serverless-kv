@@ -402,7 +402,7 @@ func (self *Server) SetGlobalMergeFunction(ctx context.Context, in *db.SetGlobal
 }
 
 func (self *Server) GetNode(ctx context.Context, in *db.GetNodeRequest) (*db.Node, error) {
-	address := indexingService.LocateKey(in.Key)
+	address := indexingService.Locate(utils.KeyHash(in.Location))
 
 	if address == self.Self {
 		node := store.GetNode(in.Location)
