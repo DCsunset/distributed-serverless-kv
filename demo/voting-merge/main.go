@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
+	"github.com/DCsunset/openwhisk-grpc/storage"
 	"github.com/DCsunset/openwhisk-grpc/utils"
 	"google.golang.org/grpc"
 )
@@ -58,11 +59,11 @@ func main() {
 			children = append(children, node)
 		}
 	}
-	children = append(children, &db.Node{
-		Dep:   parent.Location,
-		Key:   "votes",
-		Value: strconv.Itoa(maxVotes + votesNum - 1),
-	})
+	children = append(children, storage.CreateNode(
+		"votes",
+		strconv.Itoa(maxVotes+votesNum-1),
+		parent.Location,
+	))
 
 	utils.Print(db.Nodes{
 		Nodes: children,
