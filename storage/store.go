@@ -113,6 +113,8 @@ func (s *Store) RemoveNode(location uint64) {
 func (s *Store) Print() {
 	fmt.Println("Nodes:")
 	for _, node := range s.Nodes {
-		fmt.Printf("%s: %s\n", node.Key, node.Value)
+		if node.Location != 0 {
+			fmt.Printf("%s: %s\n", node.Key, node.Value)
+		}
 	}
 }
