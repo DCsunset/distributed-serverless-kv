@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -65,7 +64,7 @@ func main() {
 		Value: strconv.Itoa(maxVotes + votesNum - 1),
 	})
 
-	data, _ := json.Marshal(children)
-
-	fmt.Println(string(data))
+	utils.Print(db.Nodes{
+		Nodes: children,
+	})
 }

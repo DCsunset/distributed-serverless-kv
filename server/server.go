@@ -161,19 +161,19 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 			if len(merge) > 0 {
 				params, _ := json.Marshal(parent)
 				resp := utils.CallAction(merge, params)
-				var children []*db.Node
+				var children *db.Nodes
 				err := json.Unmarshal(resp, &children)
 				if err != nil {
 					return &db.SetResponse{Location: loc}, err
 				}
 
-				s.distributeNodes(children)
+				s.distributeNodes(children.Nodes)
 
 				// Remove current children and use new children
 				s.RemoveChildren(ctx, &db.RemoveChildrenRequest{
 					Location: parent.Location,
 				})
-				for _, child := range children {
+				for _, child := range children.Nodes {
 					s.AddChild(ctx, &db.AddChildRequest{
 						Location: child.Dep,
 						Child:    child.Location,

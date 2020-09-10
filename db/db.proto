@@ -67,6 +67,10 @@ message GetNodeRequest {
     uint64 Location = 1;
 }
 
+message Nodes {
+    repeated Node nodes = 1;
+}
+
 message Empty {}
 
 service DbService {
