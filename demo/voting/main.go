@@ -64,6 +64,13 @@ func main() {
 
 	client := db.NewDbServiceClient(conn)
 	ctx := context.Background()
+
+	// Set merge function
+	client.SetMergeFunction(ctx, &db.SetMergeFunctionRequest{
+		Location: 0,
+		Name:     "voting-merge",
+	})
+
 	vote(ctx, client, args.Name)
 
 	fmt.Println("{}")
