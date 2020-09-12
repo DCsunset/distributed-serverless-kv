@@ -23,6 +23,7 @@ type Args struct {
 	Action string `json:"action,omitempty"`
 	Kind   string `json:"kind,omitempty"`
 	Key    string `json:"key,omitempty"`
+	Server string `json:"server,omitempty"`
 }
 
 func callWorker(channel chan int64, args *Args) {
@@ -59,6 +60,7 @@ func main() {
 				Action: "worker",
 				Kind:   args.Kind,
 				Key:    randomWords(16),
+				Server: rand.Intn(len(servers)),
 			})
 		}
 		var sum int64
@@ -92,7 +94,7 @@ func main() {
 			})
 		} else {
 			// Randomly choose one server
-			address := servers[rand.Intn(len(servers))]
+			address := servers[args.Server]
 
 			conn, err := grpc.Dial(address, grpc.WithInsecure())
 			if err != nil {
