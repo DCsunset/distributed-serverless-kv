@@ -128,7 +128,7 @@ func (s *Store) Print() {
 	fmt.Println("Nodes:")
 	for _, node := range s.Nodes {
 		if len(node.Key) > 0 {
-			fmt.Printf("%s: %s (Dep: %x, Chilren: %s)\n", node.Key, node.Value, node.Dep, utils.ToString(node.Children))
+			fmt.Printf("%s (Dep: %x, Chilren: %s)\n", node.Key, node.Dep, utils.ToString(node.Children))
 		}
 	}
 }
