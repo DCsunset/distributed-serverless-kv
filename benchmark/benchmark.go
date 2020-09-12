@@ -20,8 +20,9 @@ import (
 )
 
 type Args struct {
-	Action string
-	Kind   string
+	Action string `json:"action,omitempty"`
+	Kind   string `json:"kind,omitempty"`
+	Key    string `json:"key,omitempty"`
 }
 
 func callWorker(channel chan int64, args *Args) {
@@ -57,6 +58,7 @@ func main() {
 			go callWorker(channel, &Args{
 				Action: "worker",
 				Kind:   args.Kind,
+				Key:    randomWords(16),
 			})
 		}
 		var sum int64
@@ -72,7 +74,6 @@ func main() {
 
 	} else {
 
-		key := randomWords(16)
 		value := strings.Repeat("t", 1024*1024)
 		ctx := context.Background()
 
@@ -86,7 +87,7 @@ func main() {
 			client := simpleDb.NewDbServiceClient(conn)
 
 			client.Set(ctx, &simpleDb.SetRequest{
-				Key:   "test",
+				Key:   args.Key,
 				Value: value,
 			})
 		} else {
@@ -103,7 +104,7 @@ func main() {
 
 			// Set merge function
 			client.Set(ctx, &db.SetRequest{
-				Key:   key,
+				Key:   args.Key,
 				Value: value,
 			})
 		}
