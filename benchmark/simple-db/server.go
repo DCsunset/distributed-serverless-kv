@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	simpleDb "github.com/DCsunset/openwhisk-grpc/simple-db"
 	"google.golang.org/grpc/codes"
@@ -14,6 +15,7 @@ type Server struct {
 var store = make(map[string]string)
 
 func (s *Server) Get(ctx context.Context, in *simpleDb.GetRequest) (*simpleDb.GetResponse, error) {
+	fmt.Printf("Get %s\n", in.Key)
 	value, ok := store[in.Key]
 	if ok {
 		return &simpleDb.GetResponse{Value: value}, nil
@@ -22,6 +24,7 @@ func (s *Server) Get(ctx context.Context, in *simpleDb.GetRequest) (*simpleDb.Ge
 }
 
 func (s *Server) Set(ctx context.Context, in *simpleDb.SetRequest) (*simpleDb.SetResponse, error) {
+	fmt.Printf("Set %s\n", in.Key)
 	store[in.Key] = in.Value
 	return &simpleDb.SetResponse{}, nil
 }
