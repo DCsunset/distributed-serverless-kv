@@ -67,7 +67,7 @@ func main() {
 		throughput := float64(batchSize) / float64(sum)
 		// ms
 		latency := float64(sum) / float64(batchSize)
-		fmt.Printf("{ \"throughput\": \"%lf GiB/s\", \"latency\": \"%lf ms\" }", throughput, latency)
+		fmt.Printf("{ \"throughput\": \"%f GiB/s\", \"latency\": \"%f ms\" }", throughput, latency)
 
 	} else {
 
