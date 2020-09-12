@@ -106,5 +106,6 @@ func main() {
 				Value: value,
 			})
 		}
+		fmt.Println("{}")
 	}
 }
