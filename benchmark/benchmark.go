@@ -60,7 +60,7 @@ func main() {
 				Action: "worker",
 				Kind:   args.Kind,
 				Key:    randomWords(16),
-				Server: rand.Intn(len(servers)),
+				Server: servers[rand.Intn(len(servers))],
 			})
 		}
 		var sum int64
@@ -94,7 +94,7 @@ func main() {
 			})
 		} else {
 			// Randomly choose one server
-			address := servers[args.Server]
+			address := args.Server
 
 			conn, err := grpc.Dial(address, grpc.WithInsecure())
 			if err != nil {
