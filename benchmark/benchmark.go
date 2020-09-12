@@ -26,7 +26,8 @@ type Args struct {
 
 func callWorker(channel chan int64, args *Args) {
 	start := time.Now()
-	utils.CallAction("benchmark", []byte(utils.ToString(args)))
+	resp := utils.CallAction("benchmark", []byte(utils.ToString(args)))
+	println("worker: ", string(resp))
 	channel <- time.Since(start).Milliseconds()
 }
 
@@ -71,7 +72,7 @@ func main() {
 
 	} else {
 
-		key := randomWords(20)
+		key := randomWords(16)
 		value := strings.Repeat("t", 1024*1024)
 		ctx := context.Background()
 
