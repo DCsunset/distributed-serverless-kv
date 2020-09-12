@@ -1,5 +1,5 @@
 syntax = "proto3";
-package db;
+package simpleDb;
 
 message SetRequest {
 	string Key = 1;
