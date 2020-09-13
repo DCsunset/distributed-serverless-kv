@@ -39,7 +39,8 @@ func ToString(m interface{}) string {
 func Hash(data []byte) []byte {
 	// Compute hash
 	hash := sha256.New()
-	return hash.Sum(data)
+	hash.Write(data)
+	return hash.Sum(nil)
 }
 
 func Hash2Uint(digest []byte) uint32 {
