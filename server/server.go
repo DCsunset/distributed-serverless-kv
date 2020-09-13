@@ -345,9 +345,8 @@ func (s *Server) splitRange() {
 		Nodes: results,
 	})
 
-	// Transfer merge function and remove duplicates
+	// Transfer merge function
 	for _, node := range results {
-		store.RemoveNode(node.Location)
 		f, ok := s.mergeFunction[node.Location]
 		if ok {
 			client.SetMergeFunction(ctx, &db.SetMergeFunctionRequest{
@@ -383,6 +382,11 @@ func (s *Server) splitRange() {
 
 			client.Split(context.Background(), request)
 		}
+	}
+
+	// Remove nodes after range has been updated
+	for _, node := range results {
+		store.RemoveNode(node.Location)
 	}
 }
 
