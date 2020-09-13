@@ -39,7 +39,7 @@ func callWorker(channel chan Result, args *Args) {
 	channel <- result
 }
 
-const batchSize = 30
+const batchSize = 20
 
 var servers = []string{"aqua07:9000", "aqua08:9000", "aqua09:9000", "aqua10:9000"}
 var simpleServer = "aqua11:9001"
