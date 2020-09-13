@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	simpleDb "github.com/DCsunset/openwhisk-grpc/simple-db"
@@ -11,6 +12,7 @@ import (
 )
 
 type Server struct {
+	lock sync.RWMutex
 }
 
 var store = make(map[string]string)
@@ -29,6 +31,9 @@ func (s *Server) Get(ctx context.Context, in *simpleDb.GetRequest) (*simpleDb.Ge
 }
 
 func (s *Server) Set(ctx context.Context, in *simpleDb.SetRequest) (*simpleDb.SetResponse, error) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	fmt.Printf("Set %s\n", in.Key)
 
 	// FIXME: Similuate disk
