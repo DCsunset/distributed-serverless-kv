@@ -190,6 +190,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 				// Debug
 				fmt.Println("[Merge]")
 				indexingService.Print()
+				fmt.Printf("Nodes: %d\n", store.Size)
 				// store.Print()
 			}
 		}
@@ -225,6 +226,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 	// Debug
 	fmt.Println("[Set]")
 	indexingService.Print()
+	fmt.Printf("Nodes: %d\n", store.Size)
 	// store.Print()
 	return result, nil
 }
@@ -248,6 +250,7 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.Empty, err
 	// Debug
 	fmt.Println("[Split]")
 	indexingService.Print()
+	fmt.Printf("Nodes: %d\n", store.Size)
 	// store.Print()
 
 	return &db.Empty{}, nil
