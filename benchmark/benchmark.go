@@ -40,8 +40,8 @@ func callWorker(channel chan Result, args *Args) {
 
 const batchSize = 30
 
-var servers = []string{"aqua02:9000", "aqua03:9000"}
-var simpleServer = "aqua02:9001"
+var servers = []string{"aqua07:9000", "aqua08:9000", "aqua09:9000", "aqua10:9000"}
+var simpleServer = "aqua11:9001"
 var characters = strings.Split("abcdefghijklmnopqrstuvwxyz", "")
 
 func randomWords(length int) string {
