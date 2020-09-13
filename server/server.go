@@ -341,6 +341,11 @@ func (s *Server) splitRange() {
 	client := db.NewDbServiceClient(conn)
 	ctx := context.Background()
 
+	// Debug
+	fmt.Println("[SplitRange]")
+	fmt.Printf("AddNodes: %d\n", len(results))
+	fmt.Printf("Address: %s\n", server)
+
 	client.AddNodes(ctx, &db.AddNodesRequest{
 		Nodes: results,
 	})
