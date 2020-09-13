@@ -41,8 +41,10 @@ func (s *Store) Init() {
 }
 
 func (s *Store) newNode(location uint64, dep uint64, key string, value string) {
-	s.Size += 1
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
+	s.Size += 1
 	node := Node{
 		Location: location,
 		Dep:      dep,
@@ -50,9 +52,6 @@ func (s *Store) newNode(location uint64, dep uint64, key string, value string) {
 		Children: nil,
 		Value:    value,
 	}
-
-	s.lock.Lock()
-	defer s.lock.Unlock()
 
 	s.Nodes = append(s.Nodes, node)
 	memLoc := len(s.Nodes) - 1
