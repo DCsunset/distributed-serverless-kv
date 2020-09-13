@@ -199,7 +199,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 			}
 		}
 
-		if store.Size > s.Threshold {
+		if store.Size > s.Threshold && len(s.AvailableServers) > 0 {
 			s.lock.RUnlock()
 			s.lock.Lock()
 			s.splitRange()
@@ -218,7 +218,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 		client := db.NewDbServiceClient(conn)
 
 		result, err = client.Set(ctx, in)
-		if store.Size > s.Threshold {
+		if store.Size > s.Threshold && len(s.AvailableServers) > 0 {
 			s.lock.RUnlock()
 			s.lock.Lock()
 			s.splitRange()
@@ -262,10 +262,6 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.Empty, err
 
 // Split based on key range
 func (s *Server) splitRange() {
-	if len(s.AvailableServers) == 0 {
-		return
-	}
-
 	left, right := indexingService.Range(s.Self)
 	if left == right {
 		return
