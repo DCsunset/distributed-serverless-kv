@@ -189,7 +189,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 			}
 		}
 
-		if len(store.Nodes) > s.Threshold {
+		if store.Size > s.Threshold {
 			s.splitRange()
 		}
 
@@ -204,7 +204,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 		client := db.NewDbServiceClient(conn)
 
 		result, err = client.Set(ctx, in)
-		if len(store.Nodes) > s.Threshold {
+		if store.Size > s.Threshold {
 			s.splitRange()
 		}
 	}

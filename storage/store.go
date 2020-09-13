@@ -21,6 +21,7 @@ type Store struct {
 	Nodes []Node // all nodes
 	// Map hash locations to memory locations
 	MemLocation map[uint64]int
+	Size        int // Size of valid nodes
 }
 
 func (s *Store) Init() {
@@ -38,6 +39,8 @@ func (s *Store) Init() {
 }
 
 func (s *Store) newNode(location uint64, dep uint64, key string, value string) {
+	s.Size += 1
+
 	node := Node{
 		Location: location,
 		Dep:      dep,
@@ -120,6 +123,7 @@ func (s *Store) RemoveNode(location uint64) {
 			s.Nodes[i] = Node{
 				Key: "",
 			}
+			s.Size -= 1
 			return
 		}
 	}
