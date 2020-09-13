@@ -306,7 +306,6 @@ func (s *Server) splitRange() {
 					Value:    node.Value,
 					Children: node.Children,
 				})
-				store.RemoveNode(node.Location)
 			}
 			i += 1
 		}
@@ -326,7 +325,6 @@ func (s *Server) splitRange() {
 					Value:    node.Value,
 					Children: node.Children,
 				})
-				store.RemoveNode(node.Location)
 			}
 			i += 1
 		}
@@ -347,15 +345,16 @@ func (s *Server) splitRange() {
 		Nodes: results,
 	})
 
-	// Transfer merge function
+	// Transfer merge function and remove duplicates
 	for _, node := range results {
+		store.RemoveNode(node.Location)
 		f, ok := s.mergeFunction[node.Location]
 		if ok {
-			delete(s.mergeFunction, node.Location)
 			client.SetMergeFunction(ctx, &db.SetMergeFunctionRequest{
 				Location: node.Location,
 				Name:     f,
 			})
+			delete(s.mergeFunction, node.Location)
 		}
 	}
 
