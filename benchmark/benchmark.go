@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -27,8 +26,10 @@ type Args struct {
 }
 
 type Result struct {
-	Throughput float64 `json:"throughput"`
-	Latency    float64 `json:"latency"`
+	GetThroughput float64 `json:"GetThroughput"`
+	GetLatency    float64 `json:"GetLatency"`
+	SetThroughput float64 `json:"SetThroughput"`
+	SetLatency    float64 `json:"SetLatency"`
 }
 
 func callWorker(channel chan Result, args *Args) {
@@ -52,6 +53,84 @@ func randomWords(length int) string {
 	return buffer.String()
 }
 
+func workerThread(channel chan Result, args *Args) {
+	var getDur, setDur int64
+	value := strings.Repeat("t", 1024*1024)
+	ctx := context.Background()
+
+	if args.Kind == "simple" {
+		conn, err := grpc.Dial(simpleServer, grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("Cannot connect: %v", err)
+		}
+		defer conn.Close()
+
+		client := simpleDb.NewDbServiceClient(conn)
+
+		var keys []string
+		start := time.Now()
+		for i := 0; i < 10; i += 1 {
+			key := args.Key + randomWords(8)
+			keys = append(keys, key)
+			client.Set(ctx, &simpleDb.SetRequest{
+				Key:   key,
+				Value: value,
+			})
+		}
+		setDur = time.Since(start).Milliseconds()
+
+		start = time.Now()
+		for _, key := range keys {
+			client.Get(ctx, &simpleDb.GetRequest{
+				Key: key,
+			})
+		}
+		getDur = time.Since(start).Milliseconds()
+	} else {
+		// Randomly choose one server
+		address := args.Server
+
+		conn, err := grpc.Dial(address, grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("Cannot connect: %v", err)
+		}
+		defer conn.Close()
+
+		client := db.NewDbServiceClient(conn)
+
+		var keys []string
+		var locs []uint64
+		start := time.Now()
+		for i := 0; i < 10; i += 1 {
+			key := args.Key + randomWords(8)
+			keys = append(keys, key)
+			resp, _ := client.Set(ctx, &db.SetRequest{
+				Dep:   0,
+				Key:   key,
+				Value: value,
+			})
+			locs = append(locs, resp.Location)
+		}
+		setDur = time.Since(start).Milliseconds()
+
+		start = time.Now()
+		for i := 0; i < 10; i += 1 {
+			client.Get(ctx, &db.GetRequest{
+				Location: locs[i],
+				Key:      keys[i],
+			})
+		}
+		getDur = time.Since(start).Milliseconds()
+	}
+
+	channel <- Result{
+		SetLatency:    float64(setDur) / 100,
+		SetThroughput: float64(100) / float64(setDur),
+		GetLatency:    float64(getDur) / 100,
+		GetThroughput: float64(100) / float64(getDur),
+	}
+}
+
 func main() {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	// parse json args
@@ -68,64 +147,46 @@ func main() {
 				Server: servers[rand.Intn(len(servers))],
 			})
 		}
-		var throughput, latency float64
-		throughput = 0
-		latency = 0
+
+		result := Result{
+			GetLatency:    0,
+			GetThroughput: 0,
+			SetLatency:    0,
+			SetThroughput: 0,
+		}
 		for i := 0; i < batchSize; i += 1 {
-			result := <-channel
-			throughput += result.Throughput
-			latency += result.Latency
+			r := <-channel
+			result.GetLatency += r.GetLatency
+			result.GetThroughput += r.GetThroughput
+			result.SetLatency += r.SetLatency
+			result.SetThroughput += r.SetThroughput
 		}
+		result.GetLatency /= batchSize
+		result.SetLatency /= batchSize
 
-		latency = float64(latency) / float64(batchSize)
-		fmt.Printf("{ \"throughput\": \"%f GiB/s\", \"latency\": \"%f ms\" }", throughput, latency)
-
+		utils.Print(result)
 	} else {
-
-		value := strings.Repeat("t", 1024*1024)
-		ctx := context.Background()
-
-		if args.Kind == "simple" {
-			conn, err := grpc.Dial(simpleServer, grpc.WithInsecure())
-			if err != nil {
-				log.Fatalf("Cannot connect: %v", err)
-			}
-			defer conn.Close()
-
-			client := simpleDb.NewDbServiceClient(conn)
-
-			start := time.Now()
-			for i := 0; i < 100; i += 1 {
-				client.Set(ctx, &simpleDb.SetRequest{
-					Key:   args.Key + randomWords(8),
-					Value: value,
-				})
-			}
-			t := time.Since(start).Milliseconds()
-
-			fmt.Printf("{ \"throughput\": %f, \"latency\": %f }", float64(100)/float64(t), float64(t)/100)
-
-		} else {
-			// Randomly choose one server
-			address := args.Server
-
-			conn, err := grpc.Dial(address, grpc.WithInsecure())
-			if err != nil {
-				log.Fatalf("Cannot connect: %v", err)
-			}
-			defer conn.Close()
-
-			client := db.NewDbServiceClient(conn)
-
-			start := time.Now()
-			for i := 0; i < 100; i += 1 {
-				client.Set(ctx, &db.SetRequest{
-					Key:   args.Key + randomWords(8),
-					Value: value,
-				})
-			}
-			t := time.Since(start).Milliseconds()
-			fmt.Printf("{ \"throughput\": %f, \"latency\": %f }", 100.0/float64(t), float64(t)/100.0)
+		channel := make(chan Result, 10)
+		for i := 0; i < 10; i += 1 {
+			go workerThread(channel, &args)
 		}
+
+		result := Result{
+			GetLatency:    0,
+			GetThroughput: 0,
+			SetLatency:    0,
+			SetThroughput: 0,
+		}
+		for i := 0; i < 10; i += 1 {
+			r := <-channel
+			result.GetLatency += r.GetLatency
+			result.GetThroughput += r.GetThroughput
+			result.SetLatency += r.SetLatency
+			result.SetThroughput += r.SetThroughput
+		}
+		result.GetLatency /= 10
+		result.SetLatency /= 10
+
+		utils.Print(result)
 	}
 }
