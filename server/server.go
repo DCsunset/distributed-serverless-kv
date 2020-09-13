@@ -195,7 +195,11 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 		}
 
 		if store.Size > s.Threshold {
+			s.lock.RUnlock()
+			s.lock.Lock()
 			s.splitRange()
+			s.lock.Unlock()
+			s.lock.RLock()
 		}
 
 		result = &db.SetResponse{Location: loc}
@@ -210,7 +214,11 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 
 		result, err = client.Set(ctx, in)
 		if store.Size > s.Threshold {
+			s.lock.RUnlock()
+			s.lock.Lock()
 			s.splitRange()
+			s.lock.Unlock()
+			s.lock.RLock()
 		}
 	}
 
@@ -247,9 +255,6 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.Empty, err
 
 // Split based on key range
 func (s *Server) splitRange() {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
 	if len(s.AvailableServers) == 0 {
 		return
 	}
