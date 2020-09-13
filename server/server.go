@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"sync"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
 	"github.com/DCsunset/openwhisk-grpc/indexing"
@@ -26,6 +27,7 @@ type Server struct {
 	// Split threshold
 	Threshold int `json:"threshold"`
 
+	lock                sync.RWMutex
 	mergeFunction       map[uint64]string
 	globalMergeFunction string
 }
@@ -144,6 +146,9 @@ func (self *Server) distributeNodes(nodes []*db.Node) {
 }
 
 func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResponse, err error) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
 	address := indexingService.LocateKey(in.Key)
 
 	if address == s.Self {
@@ -242,6 +247,9 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.Empty, err
 
 // Split based on key range
 func (s *Server) splitRange() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	if len(s.AvailableServers) == 0 {
 		return
 	}
