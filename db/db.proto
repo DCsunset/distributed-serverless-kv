@@ -68,12 +68,21 @@ message GetNodeRequest {
 }
 
 message Nodes {
-    repeated Node nodes = 1;
+    repeated Node Nodes = 1;
 }
 
 message Empty {}
 
+message SetIndexingLockRequest {
+    bool lock = 1;
+}
+
+message SetIndexingLockResponse {
+    bool success = 1;
+}
+
 service DbService {
+    rpc SetIndexingLock(SetIndexingLockRequest) returns (SetIndexingLockResponse) {}
     rpc RemoveChildren(RemoveChildrenRequest) returns (Empty) {}
     rpc AddChild(AddChildRequest) returns (Node) {}
     rpc GetNode(GetNodeRequest) returns (Node) {}

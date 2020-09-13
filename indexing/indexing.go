@@ -14,6 +14,11 @@ type Mapping struct {
 
 type Service struct {
 	Mappings []Mapping
+	Lock     bool
+}
+
+func (self *Service) Init() {
+	self.Lock = false
 }
 
 func (s *Service) AddMapping(left, right uint32, server string) {

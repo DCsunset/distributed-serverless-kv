@@ -37,6 +37,7 @@ var indexingService = indexing.Service{}
 
 func (s *Server) Init() {
 	store.Init()
+	indexingService.Init()
 	s.globalMergeFunction = ""
 	s.mergeFunction = make(map[uint64]string)
 
@@ -261,11 +262,35 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.Empty, err
 }
 
 // Split based on key range
+// FIXME: multiple servers might split at the same
 func (s *Server) splitRange() {
 	left, right := indexingService.Range(s.Self)
 	if left == right {
 		return
 	}
+
+	number := len(s.AvailableServers)
+	if number == 0 {
+		return
+	}
+	server := s.AvailableServers[rand.Intn(number)]
+
+	conn, err := grpc.Dial(server, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer conn.Close()
+	client := db.NewDbServiceClient(conn)
+	ctx := context.Background()
+	// Acquire lock first
+	resp, err := client.SetIndexingLock(ctx, &db.SetIndexingLockRequest{Lock: true})
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if !resp.Success {
+		return
+	}
+
 	mid := uint32((uint64(left) + uint64(right)) / 2)
 
 	var keys []uint32
@@ -291,8 +316,6 @@ func (s *Server) splitRange() {
 	utils.Print(s.AvailableServers)
 	fmt.Println()
 
-	number := len(s.AvailableServers)
-	server := s.AvailableServers[rand.Intn(number)]
 	var leftServer, rightServer string
 	var results []*db.Node
 	if greater >= le {
@@ -334,15 +357,6 @@ func (s *Server) splitRange() {
 		rightServer = server
 		leftServer = s.Self
 	}
-
-	// Forward request to the correct server
-	conn, err := grpc.Dial(server, grpc.WithInsecure())
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer conn.Close()
-	client := db.NewDbServiceClient(conn)
-	ctx := context.Background()
 
 	// Debug
 	fmt.Printf("AddNodes: %d\n", len(results))
@@ -412,6 +426,13 @@ func (s *Server) splitRange() {
 	for _, node := range results {
 		store.RemoveNode(node.Location)
 	}
+
+	_, err = client.SetIndexingLock(ctx, &db.SetIndexingLockRequest{
+		Lock: false,
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func (s *Server) AddNode(ctx context.Context, in *db.AddNodeRequest) (*db.Empty, error) {
@@ -480,5 +501,25 @@ func (self *Server) GetNode(ctx context.Context, in *db.GetNodeRequest) (*db.Nod
 		client := db.NewDbServiceClient(conn)
 
 		return client.GetNode(ctx, in)
+	}
+}
+
+func (self *Server) SetIndexingLock(ctx context.Context, in *db.SetIndexingLockRequest) (*db.SetIndexingLockResponse, error) {
+	if in.Lock {
+		if !indexingService.Lock {
+			indexingService.Lock = true
+			return &db.SetIndexingLockResponse{
+				Success: true,
+			}, nil
+		} else {
+			return &db.SetIndexingLockResponse{
+				Success: false,
+			}, nil
+		}
+	} else {
+		indexingService.Lock = false
+		return &db.SetIndexingLockResponse{
+			Success: true,
+		}, nil
 	}
 }
