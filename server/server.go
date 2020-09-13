@@ -150,6 +150,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 	defer s.lock.RUnlock()
 
 	address := indexingService.LocateKey(in.Key)
+	fmt.Printf("Key: %s, KeyHash: %x, Server: %s\n", in.Key, utils.Hash2Uint(utils.Hash([]byte(key))), address)
 
 	if address == s.Self {
 		loc := store.Set(in.Key, in.Value, in.Dep)
