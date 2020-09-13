@@ -293,8 +293,8 @@ func (s *Server) splitKeys() {
 				store.RemoveNode(node.Location)
 			}
 		}
-		rightServer = s.Self
-		leftServer = server
+		rightServer = server
+		leftServer = s.Self
 	} else {
 		for _, node := range store.Nodes {
 			if utils.KeyHash(node.Location) < mid {
