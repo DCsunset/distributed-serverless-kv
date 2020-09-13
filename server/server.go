@@ -155,44 +155,46 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 	if address == s.Self {
 		loc := store.Set(in.Key, in.Value, in.Dep)
 		// Add child
-		parent, _ := s.AddChild(ctx, &db.AddChildRequest{
-			Location: in.Dep,
-			Child:    loc,
-		})
+		if in.Dep != 0 {
+			parent, _ := s.AddChild(ctx, &db.AddChildRequest{
+				Location: in.Dep,
+				Child:    loc,
+			})
 
-		// Trigger function if there's conflict
-		if len(parent.Children) > 1 {
-			merge, ok := s.mergeFunction[in.Dep]
-			if !ok {
-				merge = s.globalMergeFunction
-			}
-			if len(merge) > 0 {
-				params, _ := json.Marshal(parent)
-				resp := utils.CallAction(merge, params)
-				var children *db.Nodes
-				err := json.Unmarshal(resp, &children)
-				if err != nil {
-					return &db.SetResponse{Location: loc}, err
+			// Trigger function if there's conflict
+			if len(parent.Children) > 1 {
+				merge, ok := s.mergeFunction[in.Dep]
+				if !ok {
+					merge = s.globalMergeFunction
 				}
+				if len(merge) > 0 {
+					params, _ := json.Marshal(parent)
+					resp := utils.CallAction(merge, params)
+					var children *db.Nodes
+					err := json.Unmarshal(resp, &children)
+					if err != nil {
+						return &db.SetResponse{Location: loc}, err
+					}
 
-				s.distributeNodes(children.Nodes)
+					s.distributeNodes(children.Nodes)
 
-				// Remove current children and use new children
-				s.RemoveChildren(ctx, &db.RemoveChildrenRequest{
-					Location: parent.Location,
-				})
-				for _, child := range children.Nodes {
-					s.AddChild(ctx, &db.AddChildRequest{
-						Location: child.Dep,
-						Child:    child.Location,
+					// Remove current children and use new children
+					s.RemoveChildren(ctx, &db.RemoveChildrenRequest{
+						Location: parent.Location,
 					})
-				}
+					for _, child := range children.Nodes {
+						s.AddChild(ctx, &db.AddChildRequest{
+							Location: child.Dep,
+							Child:    child.Location,
+						})
+					}
 
-				// Debug
-				fmt.Println("[Merge]")
-				indexingService.Print()
-				fmt.Printf("Nodes: %d\n", store.Size)
-				// store.Print()
+					// Debug
+					fmt.Println("[Merge]")
+					indexingService.Print()
+					fmt.Printf("Nodes: %d\n", store.Size)
+					// store.Print()
+				}
 			}
 		}
 
