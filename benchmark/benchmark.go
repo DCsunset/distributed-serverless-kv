@@ -76,9 +76,7 @@ func main() {
 			throughput += result.Throughput
 			latency += result.Latency
 		}
-		// GiB/s
-		throughput = float64(throughput) / float64(batchSize)
-		// ms
+
 		latency = float64(latency) / float64(batchSize)
 		fmt.Printf("{ \"throughput\": \"%f GiB/s\", \"latency\": \"%f ms\" }", throughput, latency)
 
