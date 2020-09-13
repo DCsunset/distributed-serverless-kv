@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"sync"
+	"time"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
 	"github.com/DCsunset/openwhisk-grpc/utils"
@@ -60,6 +61,9 @@ func (s *Store) newNode(location uint64, dep uint64, key string, value string) {
 }
 
 func (s *Store) Get(key string, loc uint64) (string, error) {
+	// FIXME: Similuate disk
+	time.Sleep(time.Millisecond * 10)
+
 	var node *Node
 	node = s.GetNode(loc)
 
@@ -89,6 +93,9 @@ func (self *Store) AddChild(location uint64, child uint64) *Node {
 }
 
 func (s *Store) Set(key string, value string, dep uint64) uint64 {
+	// FIXME: Similuate disk
+	time.Sleep(time.Millisecond * 10)
+
 	// Use random number + key hash
 	loc := uint64(rand.Uint32()) + (uint64(utils.Hash2Uint(utils.Hash([]byte(key)))) << 32)
 	s.newNode(loc, dep, key, value)

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	simpleDb "github.com/DCsunset/openwhisk-grpc/simple-db"
 	"google.golang.org/grpc/codes"
@@ -16,6 +17,10 @@ var store = make(map[string]string)
 
 func (s *Server) Get(ctx context.Context, in *simpleDb.GetRequest) (*simpleDb.GetResponse, error) {
 	fmt.Printf("Get %s\n", in.Key)
+
+	// FIXME: Similuate disk
+	time.Sleep(time.Millisecond * 10)
+
 	value, ok := store[in.Key]
 	if ok {
 		return &simpleDb.GetResponse{Value: value}, nil
@@ -25,6 +30,10 @@ func (s *Server) Get(ctx context.Context, in *simpleDb.GetRequest) (*simpleDb.Ge
 
 func (s *Server) Set(ctx context.Context, in *simpleDb.SetRequest) (*simpleDb.SetResponse, error) {
 	fmt.Printf("Set %s\n", in.Key)
+
+	// FIXME: Similuate disk
+	time.Sleep(time.Millisecond * 10)
+
 	store[in.Key] = in.Value
 	return &simpleDb.SetResponse{}, nil
 }
