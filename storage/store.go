@@ -30,6 +30,7 @@ func (s *Store) Init() {
 		root := Node{
 			Dep:      math.MaxUint64,
 			Location: 0,
+			Key:      "",
 		}
 		s.Nodes = append(s.Nodes, root)
 		s.MemLocation[0] = 0
