@@ -286,7 +286,13 @@ func (s *Server) splitRange() {
 		}
 	}
 
-	server := s.AvailableServers[rand.Intn(len(s.AvailableServers))]
+	// Debug
+	fmt.Println("[SplitRange]")
+	utils.Print(s.AvailableServers)
+	fmt.Println()
+
+	number := len(s.AvailableServers)
+	server := s.AvailableServers[rand.Intn(number)]
 	var leftServer, rightServer string
 	var results []*db.Node
 	if greater >= le {
@@ -339,7 +345,6 @@ func (s *Server) splitRange() {
 	ctx := context.Background()
 
 	// Debug
-	fmt.Println("[SplitRange]")
 	fmt.Printf("AddNodes: %d\n", len(results))
 	fmt.Printf("Address: %s\n", server)
 
