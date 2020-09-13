@@ -152,7 +152,6 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 	defer s.lock.RUnlock()
 
 	address := indexingService.LocateKey(in.Key)
-	fmt.Printf("Key: %s, KeyHash: %x, Server: %s\n", in.Key, utils.Hash2Uint(utils.Hash([]byte(in.Key))), address)
 
 	if address == s.Self {
 		loc := store.Set(in.Key, in.Value, in.Dep)
@@ -361,10 +360,13 @@ func (s *Server) splitRange() {
 	for _, node := range results {
 		f, ok := s.mergeFunction[node.Location]
 		if ok {
-			client.SetMergeFunction(ctx, &db.SetMergeFunctionRequest{
+			_, err := client.SetMergeFunction(ctx, &db.SetMergeFunctionRequest{
 				Location: node.Location,
 				Name:     f,
 			})
+			if err != nil {
+				log.Fatalln(err)
+			}
 			delete(s.mergeFunction, node.Location)
 		}
 	}
@@ -380,9 +382,15 @@ func (s *Server) splitRange() {
 
 	for _, addr := range s.Servers {
 		if addr == s.Self {
-			s.Split(ctx, request)
+			_, err := s.Split(ctx, request)
+			if err != nil {
+				log.Fatalln(err)
+			}
 		} else if addr == server {
-			client.Split(ctx, request)
+			_, err := client.Split(ctx, request)
+			if err != nil {
+				log.Fatalln(err)
+			}
 		} else {
 			// Forward request to all servers
 			conn, err := grpc.Dial(addr, grpc.WithInsecure())
@@ -392,7 +400,10 @@ func (s *Server) splitRange() {
 			defer conn.Close()
 			client := db.NewDbServiceClient(conn)
 
-			client.Split(context.Background(), request)
+			_, err = client.Split(context.Background(), request)
+			if err != nil {
+				log.Fatalln(err)
+			}
 		}
 	}
 
