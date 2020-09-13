@@ -346,9 +346,12 @@ func (s *Server) splitRange() {
 	fmt.Printf("AddNodes: %d\n", len(results))
 	fmt.Printf("Address: %s\n", server)
 
-	client.AddNodes(ctx, &db.AddNodesRequest{
+	_, err := client.AddNodes(ctx, &db.AddNodesRequest{
 		Nodes: results,
 	})
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	// Transfer merge function
 	for _, node := range results {
