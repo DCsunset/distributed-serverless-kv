@@ -139,9 +139,11 @@ func (self *Server) distributeNodes(nodes []*db.Node) {
 		}
 		defer conn.Close()
 		client := db.NewDbServiceClient(conn)
-		client.AddNodes(ctx, &db.AddNodesRequest{
-			Nodes: nodes,
-		})
+		for _, node := range nodes {
+			client.AddNode(ctx, &db.AddNodeRequest{
+				Node: node,
+			})
+		}
 	}
 }
 
@@ -346,11 +348,13 @@ func (s *Server) splitRange() {
 	fmt.Printf("AddNodes: %d\n", len(results))
 	fmt.Printf("Address: %s\n", server)
 
-	_, err = client.AddNodes(ctx, &db.AddNodesRequest{
-		Nodes: results,
-	})
-	if err != nil {
-		log.Fatalln(err)
+	for _, node := range results {
+		_, err = client.AddNode(ctx, &db.AddNodeRequest{
+			Node: node,
+		})
+		if err != nil {
+			log.Fatalln(err)
+		}
 	}
 
 	// Transfer merge function
@@ -398,8 +402,8 @@ func (s *Server) splitRange() {
 	}
 }
 
-func (s *Server) AddNodes(ctx context.Context, in *db.AddNodesRequest) (*db.Empty, error) {
-	store.AddNodes(in.Nodes)
+func (s *Server) AddNode(ctx context.Context, in *db.AddNodeRequest) (*db.Empty, error) {
+	store.AddNode(in.Node)
 	// Debug
 	fmt.Println("[AddNodes]")
 	indexingService.Print()

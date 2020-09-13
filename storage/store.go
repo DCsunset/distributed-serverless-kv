@@ -116,10 +116,8 @@ func (s *Store) GetNode(loc uint64) *Node {
 	return &s.Nodes[memLoc]
 }
 
-func (s *Store) AddNodes(nodes []*db.Node) {
-	for _, node := range nodes {
-		s.newNode(node.Location, node.Dep, node.Key, node.Value)
-	}
+func (s *Store) AddNode(node *db.Node) {
+	s.newNode(node.Location, node.Dep, node.Key, node.Value)
 }
 
 func (s *Store) RemoveNode(location uint64) {

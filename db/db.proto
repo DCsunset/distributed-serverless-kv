@@ -30,8 +30,8 @@ message Node {
     repeated uint64 Children = 5;
 }
 
-message AddNodesRequest {
-    repeated Node Nodes = 1;
+message AddNodeRequest {
+    Node Node = 1;
 }
 
 message SplitRequest {
@@ -79,7 +79,7 @@ service DbService {
     rpc GetNode(GetNodeRequest) returns (Node) {}
     rpc Get(GetRequest) returns (GetResponse) {}
     rpc Set(SetRequest) returns (SetResponse) {}
-    rpc AddNodes(AddNodesRequest) returns (Empty) {}
+    rpc AddNode(AddNodeRequest) returns (Empty) {}
     rpc Split(SplitRequest) returns (Empty) {}
     rpc SetMergeFunction(SetMergeFunctionRequest) returns (Empty) {}
     rpc SetGlobalMergeFunction(SetGlobalMergeFunctionRequest) returns (Empty) {}
