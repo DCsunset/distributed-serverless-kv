@@ -26,11 +26,16 @@ type Args struct {
 	Server string `json:"server,omitempty"`
 }
 
-func callWorker(channel chan int64, args *Args) {
-	start := time.Now()
+type Result struct {
+	Throughput float64 `json:"throughput"`
+	Latency    float64 `json:"latency"`
+}
+
+func callWorker(channel chan Result, args *Args) {
 	resp := utils.CallAction("benchmark", []byte(utils.ToString(args)))
-	println("worker: ", string(resp))
-	channel <- time.Since(start).Milliseconds()
+	var result Result
+	json.Unmarshal(resp, &result)
+	channel <- result
 }
 
 const batchSize = 30
@@ -54,24 +59,27 @@ func main() {
 	json.Unmarshal([]byte(os.Args[1]), &args)
 
 	if args.Action == "runner" {
-		channel := make(chan int64, batchSize)
+		channel := make(chan Result, batchSize)
 		for i := 0; i < batchSize; i += 1 {
 			go callWorker(channel, &Args{
 				Action: "worker",
 				Kind:   args.Kind,
-				Key:    randomWords(16),
+				Key:    randomWords(8),
 				Server: servers[rand.Intn(len(servers))],
 			})
 		}
-		var sum int64
-		sum = 0
+		var throughput, latency float64
+		throughput = 0
+		latency = 0
 		for i := 0; i < batchSize; i += 1 {
-			sum += <-channel
+			result := <-channel
+			throughput += result.Throughput
+			latency += result.Latency
 		}
 		// GiB/s
-		throughput := float64(batchSize) / float64(sum)
+		throughput = float64(throughput) / float64(batchSize)
 		// ms
-		latency := float64(sum) / float64(batchSize)
+		latency = float64(latency) / float64(batchSize)
 		fmt.Printf("{ \"throughput\": \"%f GiB/s\", \"latency\": \"%f ms\" }", throughput, latency)
 
 	} else {
@@ -79,7 +87,7 @@ func main() {
 		value := strings.Repeat("t", 1024*1024)
 		ctx := context.Background()
 
-		if args.Kind != "simple" {
+		if args.Kind == "simple" {
 			conn, err := grpc.Dial(simpleServer, grpc.WithInsecure())
 			if err != nil {
 				log.Fatalf("Cannot connect: %v", err)
@@ -88,10 +96,17 @@ func main() {
 
 			client := simpleDb.NewDbServiceClient(conn)
 
-			client.Set(ctx, &simpleDb.SetRequest{
-				Key:   args.Key,
-				Value: value,
-			})
+			start := time.Now()
+			for i := 0; i < 100; i += 1 {
+				client.Set(ctx, &simpleDb.SetRequest{
+					Key:   args.Key + randomWords(8),
+					Value: value,
+				})
+			}
+			t := time.Since(start).Milliseconds()
+
+			fmt.Printf("{ \"throughput\": %f, \"latency\": %f }", float64(100)/float64(t), float64(t)/100)
+
 		} else {
 			// Randomly choose one server
 			address := args.Server
@@ -104,12 +119,15 @@ func main() {
 
 			client := db.NewDbServiceClient(conn)
 
-			// Set merge function
-			client.Set(ctx, &db.SetRequest{
-				Key:   args.Key,
-				Value: value,
-			})
+			start := time.Now()
+			for i := 0; i < 100; i += 1 {
+				client.Set(ctx, &db.SetRequest{
+					Key:   args.Key + randomWords(8),
+					Value: value,
+				})
+			}
+			t := time.Since(start).Milliseconds()
+			fmt.Printf("{ \"throughput\": %f, \"latency\": %f }", 100.0/float64(t), float64(t)/100.0)
 		}
-		fmt.Println("{}")
 	}
 }
