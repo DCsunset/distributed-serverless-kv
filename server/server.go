@@ -210,9 +210,9 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 	}
 
 	// Debug
-	fmt.Println("[Set]")
-	indexingService.Print()
-	store.Print()
+	// fmt.Println("[Set]")
+	// indexingService.Print()
+	// store.Print()
 	return result, nil
 }
 
