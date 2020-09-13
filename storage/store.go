@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"sync"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
 	"github.com/DCsunset/openwhisk-grpc/utils"
@@ -21,6 +22,7 @@ type Store struct {
 	Nodes []Node // all nodes
 	// Map hash locations to memory locations
 	MemLocation map[uint64]int
+	lock        sync.RWMutex
 	Size        int // Size of valid nodes
 }
 
@@ -48,6 +50,10 @@ func (s *Store) newNode(location uint64, dep uint64, key string, value string) {
 		Children: nil,
 		Value:    value,
 	}
+
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	s.Nodes = append(s.Nodes, node)
 	memLoc := len(s.Nodes) - 1
 
