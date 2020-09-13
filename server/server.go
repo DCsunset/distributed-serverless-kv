@@ -392,6 +392,11 @@ func (s *Server) splitRange() {
 
 func (s *Server) AddNodes(ctx context.Context, in *db.AddNodesRequest) (*db.Empty, error) {
 	store.AddNodes(in.Nodes)
+	// Debug
+	fmt.Println("[AddNodes]")
+	indexingService.Print()
+	fmt.Printf("Nodes: %d\n", store.Size)
+
 	return &db.Empty{}, nil
 }
 
