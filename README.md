@@ -50,3 +50,14 @@ To invoke the action, run `action/invokeAction.sh`.
 ```
 protoc -I db --go_out=plugins=grpc:db db/db.proto
 ```
+
+## Benchmarks
+
+(10ms delay has been added to read and write operations)
+
+| Operations       | Simple Database | Distributed Database |
+| ---------------- | --------------- | -------------------- |
+| Read Latency     | 25 ms           | 20 ms                |
+| Write Latency    | 50 ms           | 35 ms                |
+| Read Throughput  | 24 GB/s         | 16 GB/s              |
+| Write Throughput | 7 GB/s          | 11 GB/s              |
