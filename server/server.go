@@ -362,9 +362,7 @@ func (s *Server) splitKeys() {
 			defer conn.Close()
 			client := db.NewDbServiceClient(conn)
 
-			client.AddNodes(context.Background(), &db.AddNodesRequest{
-				Nodes: results,
-			})
+			client.Split(context.Background(), request)
 		}
 	}
 }
