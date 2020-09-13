@@ -25,7 +25,7 @@ func (s *Service) RemoveMapping(left, right uint32) {
 		if mapping.Left == left && mapping.Right == right {
 			l := len(s.Mappings)
 			s.Mappings[i], s.Mappings[l-1] = s.Mappings[l-1], s.Mappings[i]
-			s.Mappings = s.Mappings[:l]
+			s.Mappings = s.Mappings[:l-1]
 			return
 		}
 	}
