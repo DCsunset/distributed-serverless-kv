@@ -8,7 +8,6 @@ import (
 	"log"
 	"math"
 	"math/rand"
-	"sort"
 
 	"github.com/DCsunset/openwhisk-grpc/db"
 	"github.com/DCsunset/openwhisk-grpc/indexing"
@@ -191,7 +190,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 		}
 
 		if len(store.Nodes) > s.Threshold {
-			s.splitKeys()
+			s.splitRange()
 		}
 
 		result = &db.SetResponse{Location: loc}
@@ -206,7 +205,7 @@ func (s *Server) Set(ctx context.Context, in *db.SetRequest) (result *db.SetResp
 
 		result, err = client.Set(ctx, in)
 		if len(store.Nodes) > s.Threshold {
-			s.splitKeys()
+			s.splitRange()
 		}
 	}
 
@@ -242,10 +241,16 @@ func (s *Server) Split(ctx context.Context, in *db.SplitRequest) (*db.Empty, err
 }
 
 // Split based on key range
-func (s *Server) splitKeys() {
+func (s *Server) splitRange() {
 	if len(s.AvailableServers) == 0 {
 		return
 	}
+
+	left, right := indexingService.Range(s.Self)
+	if left == right {
+		return
+	}
+	mid := uint32((uint64(left) + uint64(right)) / 2)
 
 	var keys []uint32
 	for i, node := range store.Nodes {
@@ -254,35 +259,27 @@ func (s *Server) splitKeys() {
 		}
 		keys = append(keys, utils.KeyHash(node.Location))
 	}
-	if len(keys) == 0 {
-		return
-	}
 
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-	mid := keys[len(keys)/2]
-
-	less := 0
+	le := 0
 	greater := 0
 	for _, key := range keys {
 		if key > mid {
 			greater += 1
-		} else if key < mid {
-			less += 1
+		} else if key <= mid {
+			le += 1
 		}
-	}
-
-	if greater == 0 && less == 0 {
-		return
 	}
 
 	server := s.AvailableServers[rand.Intn(len(s.AvailableServers))]
 	var leftServer, rightServer string
 	var results []*db.Node
-	if greater >= less {
+	if greater >= le {
+		i := 0
 		for _, node := range store.Nodes {
-			if utils.KeyHash(node.Location) > mid {
+			if node.Key == "" {
+				continue
+			}
+			if keys[i] <= mid {
 				results = append(results, &db.Node{
 					Location: node.Location,
 					Dep:      node.Dep,
@@ -292,25 +289,30 @@ func (s *Server) splitKeys() {
 				})
 				store.RemoveNode(node.Location)
 			}
+			i += 1
+		}
+		rightServer = s.Self
+		leftServer = server
+	} else {
+		i := 0
+		for _, node := range store.Nodes {
+			if node.Key == "" {
+				continue
+			}
+			if keys[i] > mid {
+				results = append(results, &db.Node{
+					Location: node.Location,
+					Dep:      node.Dep,
+					Key:      node.Key,
+					Value:    node.Value,
+					Children: node.Children,
+				})
+				store.RemoveNode(node.Location)
+			}
+			i += 1
 		}
 		rightServer = server
 		leftServer = s.Self
-	} else {
-		for _, node := range store.Nodes {
-			if utils.KeyHash(node.Location) < mid {
-				results = append(results, &db.Node{
-					Location: node.Location,
-					Dep:      node.Dep,
-					Key:      node.Key,
-					Value:    node.Value,
-					Children: node.Children,
-				})
-				store.RemoveNode(node.Location)
-			}
-		}
-		mid -= 1
-		rightServer = s.Self
-		leftServer = server
 	}
 
 	// Forward request to the correct server
@@ -339,7 +341,6 @@ func (s *Server) splitKeys() {
 	}
 
 	// Update indexing server
-	left, right := indexingService.Range(s.Self)
 	request := &db.SplitRequest{
 		Left:        left,
 		Right:       right,
