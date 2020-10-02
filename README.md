@@ -2,14 +2,11 @@
 
 ## Introduction
 
-This demo includes a simple key-value store and a word counting action
-that simulates MapReduce workflow.
-
-The action will count all the words stored in keys within the range `[0, 20)`,
+This demo is a simple in-memory distributed key-value database.
 
 **Note**:
-The number of action invocations are limited to 60 per minute by default.
-The default limitations can be changed in helm configuration file when deploying.
+The number of action invocations in OpenWhisk are limited to 60 per minute by default.
+The default limitations can be changed in helm configuration file when deploying it.
 
 
 ## Run this project
@@ -20,30 +17,26 @@ Some steps might differ on other platforms.)
 First, clone this repository directly to `$GOPATH/src/github.com/DCsunset/openwhisk-grpc`
 or clone it elsewhere and create a symlink in it.
 
-Then, start the db server in directory `server`:
+Next, modify the `server.json` in the `server` directory.
+Since this prototype is elastic,
+the `initial` field means the first server to store the data.
+The `availableServers` field means the servers available to be used later.
+The `self` field is the address of the current machine.
+The `servers` field shows all the servers used for the db.
+The `threshold` field means when the key-value pairs reach the threshold,
+data should be split and sent to other available servers.
+
+Then, start the db server in directory `server` on every machine:
 
 ```
 go run *.go
 ```
 
-Next, mock data in the db in direction `mock`:
+Next, deploy OpenWhisk (for example, k8s in docker).
 
-```
-go run mock.go
-```
+Finally, run `createAction.sh` in the `demo` directory to create some demo actions.
 
-Then, build the binary in directory `action` (must be statically linked):
-
-```
-CGO_ENABLED=0 go build -o exec <action>.go
-zip exec.zip exec
-```
-
-Then, deploy OpenWhisk (for example, k8s in docker).
-
-Finally, run `action/createAction.sh` to create the action.
-
-To invoke the action, run `action/invokeAction.sh`.
+To invoke the action, change the parameters in `invokeAction.sh` and execute it.
 
 ## Generate grpc code from proto
 
@@ -53,7 +46,17 @@ protoc -I db --go_out=plugins=grpc:db db/db.proto
 
 ## Benchmarks
 
-(10ms delay has been added to read and write operations)
+### Steps
+
+To run the benchmarking, first deploy the simple db and the distributed db.
+
+Then modify the `createAction.sh` script and run it to create the benchmark action.
+
+Finally, run the `invokeAction.sh` script to start the benchmarking.
+
+### Results
+
+(10ms delay has been added intentionally to read and write operations)
 
 | Operations       | Simple Database | Distributed Database |
 | ---------------- | --------------- | -------------------- |
