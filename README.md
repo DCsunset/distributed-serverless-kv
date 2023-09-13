@@ -1,4 +1,4 @@
-# openwhisk-grpc
+# distributed-serverless-kv
 
 ## Introduction
 
